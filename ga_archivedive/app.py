@@ -1,4 +1,5 @@
 from textual.app import App
+from textual.binding import Binding
 
 from .api import GAClient
 from .screens.search import SearchScreen
@@ -8,12 +9,24 @@ class ArchiveDiveApp(App):
     TITLE = "ArchiveDive"
     SUB_TITLE = "Grand Archive card browser"
 
+    BINDINGS = [
+        Binding("f1", "help", "Help", priority=True),
+        Binding("?", "help", "Help", priority=True, show=False),
+    ]
+
     def __init__(self) -> None:
         super().__init__()
         self.client = GAClient()
 
     def on_mount(self) -> None:
         self.push_screen(SearchScreen())
+
+    def action_help(self) -> None:
+        from .screens.help import HelpScreen
+        if isinstance(self.screen, HelpScreen):
+            self.pop_screen()
+        else:
+            self.push_screen(HelpScreen())
 
     async def on_unmount(self) -> None:
         await self.client.close()
