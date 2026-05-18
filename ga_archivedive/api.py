@@ -154,3 +154,10 @@ class GAClient:
 
     def image_url(self, filename: str) -> str:
         return f"{BASE_URL}/cards/images/{filename}"
+
+    async def fetch_image(self, filename: str) -> bytes:
+        if filename.startswith("/cards/images/"):
+            filename = filename[len("/cards/images/"):]
+        response = await self._http.get(f"/cards/images/{filename}")
+        response.raise_for_status()
+        return response.content
