@@ -62,6 +62,7 @@ class Card(BaseModel):
     effect_raw: str | None = None
     flavor: str | None = None
     rule: str | None = None
+    legality: dict[str, dict[str, Any]] | None = None
 
     @field_validator("speed", mode="before")
     @classmethod

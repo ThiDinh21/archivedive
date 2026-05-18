@@ -103,6 +103,17 @@ def _render(card: Card) -> str:
             ed_parts.append(f"[dim]by {ed.illustrator}[/dim]")
         parts.append("  •  ".join(ed_parts))
 
+    parts.append(_section("Legality"))
+    legality = card.legality or {}
+    for fmt in ("STANDARD", "PANTHEON", "DRAFT"):
+        info = legality.get(fmt)
+        if info is None:
+            status = "[green]Legal[/green]"
+        else:
+            limit = info.get("limit", 0)
+            status = "[red]Banned[/red]" if limit == 0 else f"[yellow]Restricted ({limit})[/yellow]"
+        parts.append(f"[dim]{fmt.capitalize():<10}[/dim] {status}")
+
     if card.rule:
         parts.append(_section("Rule"))
         parts.append(f"[dim]{_to_rich(card.rule, card.name)}[/dim]")
