@@ -152,6 +152,81 @@ class GAClient:
         cards = data.get("data", data) if isinstance(data, dict) else data
         return [Card.model_validate(c) for c in cards]
 
+    async def search_query(
+        self,
+        query: str,
+        page: int = 1,
+        page_size: int = 50,
+    ) -> SearchResponse:
+        from .query import parse, to_api_params, apply_client_filters
+
+        parsed = parse(query)
+
+        if not parsed.groups or all(not g for g in parsed.groups):
+            return await self.search(page=page, page_size=page_size)
+
+        if len(parsed.groups) == 1:
+            return await self._fetch_group(
+                parsed.groups[0], page, page_size
+            )
+
+        # OR: fetch each group and merge, deduplicated by slug
+        seen: set[str] = set()
+        merged: list[Card] = []
+        for group in parsed.groups:
+            result = await self._fetch_group(group, page=1, page_size=page_size)
+            for card in result.data:
+                if card.slug not in seen:
+                    seen.add(card.slug)
+                    merged.append(card)
+
+        resp = SearchResponse(
+            data=merged,
+            total_cards=len(merged),
+            total_pages=1,
+            has_more=False,
+            paginated_cards_count=len(merged),
+            page=1,
+            page_size=page_size,
+        )
+        return resp
+
+    async def _fetch_group(
+        self,
+        filters: list,
+        page: int,
+        page_size: int,
+    ) -> SearchResponse:
+        from .query import to_api_params, apply_client_filters
+
+        params = to_api_params(filters)
+        params["sort"] = "name"
+        params["order"] = "ASC"
+        params["page"] = page
+        params["page_size"] = page_size
+
+        cache_key = f"query:{json.dumps(params, sort_keys=True, default=str)}"
+        if cached := self._cache.get(cache_key):
+            result = SearchResponse.model_validate(cached)
+        else:
+            # Build httpx-compatible param list (multi-value support)
+            param_list: list[tuple[str, Any]] = []
+            for k, v in params.items():
+                if isinstance(v, list):
+                    for item in v:
+                        param_list.append((k, item))
+                else:
+                    param_list.append((k, v))
+
+            response = await self._http.get("/cards/search", params=param_list)
+            response.raise_for_status()
+            data = response.json()
+            self._cache.set(cache_key, data)
+            result = SearchResponse.model_validate(data)
+
+        result.data = apply_client_filters(result.data, filters)
+        return result
+
     def image_url(self, filename: str) -> str:
         return f"{BASE_URL}/cards/images/{filename}"
 

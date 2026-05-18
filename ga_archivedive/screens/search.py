@@ -134,7 +134,7 @@ class SearchScreen(Screen):
                 self._set_status(len(cards), 1, 1)
                 return
 
-            result: SearchResponse = await client.search(name=query, page=self._page)
+            result: SearchResponse = await client.search_query(query, page=self._page)
             table.populate(result.data)
             self._total_pages = result.total_pages
             self._total_cards = result.total_cards
