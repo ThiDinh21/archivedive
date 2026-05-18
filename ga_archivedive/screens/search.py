@@ -32,6 +32,7 @@ class SearchScreen(Screen):
         Binding("c", "copy_card", "Copy card"),
         Binding("o", "open_image", "Open image"),
         Binding("ctrl+o", "select_art", "Select art", key_display="ctrl+o"),
+        Binding("r", "related_cards", "Related cards"),
     ]
 
     DEFAULT_CSS = """
@@ -162,6 +163,23 @@ class SearchScreen(Screen):
 
     def action_open_image(self) -> None:
         self.query_one(CardPanel).action_open_image()
+
+    def action_related_cards(self) -> None:
+        from .related import RelatedCardsScreen
+        panel = self.query_one(CardPanel)
+        card = panel._current_card
+        if card is None or not (card.references or card.referenced_by):
+            return
+        def on_selected(slug: str | None) -> None:
+            if slug:
+                self._load_related(slug)
+        self.app.push_screen(RelatedCardsScreen(card.references, card.referenced_by), on_selected)
+
+    @work(exclusive=False)
+    async def _load_related(self, slug: str) -> None:
+        client = self.app.client  # type: ignore[attr-defined]
+        card = await client.get_card(slug)
+        self.query_one(CardPanel).show(card)
 
     def action_select_art(self) -> None:
         from .art_select import ArtSelectScreen

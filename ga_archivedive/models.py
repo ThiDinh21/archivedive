@@ -43,6 +43,14 @@ class CardEdition(BaseModel):
     legality: dict[str, Any] | None = None
 
 
+class CardReference(BaseModel):
+    kind: str | None = None
+    name: str
+    slug: str
+    uuid: str | None = None
+    direction: str | None = None
+
+
 class Card(BaseModel):
     name: str
     slug: str
@@ -87,8 +95,8 @@ class Card(BaseModel):
         return v
     editions: list[CardEdition] = Field(default_factory=list)
     result_editions: list[CardEdition] = Field(default_factory=list)
-    references: list[Any] = Field(default_factory=list)
-    referenced_by: list[Any] = Field(default_factory=list)
+    references: list[CardReference] = Field(default_factory=list)
+    referenced_by: list[CardReference] = Field(default_factory=list)
     last_update: str | None = None
 
     @property

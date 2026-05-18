@@ -114,6 +114,17 @@ def _render(card: Card) -> str:
             status = "[red]Banned[/red]" if limit == 0 else f"[yellow]Restricted ({limit})[/yellow]"
         parts.append(f"[dim]{fmt.capitalize():<10}[/dim] {status}")
 
+    all_refs = card.references + card.referenced_by
+    if all_refs:
+        parts.append(_section("Related"))
+        for ref in card.references:
+            kind = f"[dim][{ref.kind}][/dim]" if ref.kind else ""
+            parts.append(f"[dim]→[/dim] {ref.name}  {kind}")
+        for ref in card.referenced_by:
+            kind = f"[dim][{ref.kind}][/dim]" if ref.kind else ""
+            parts.append(f"[dim]←[/dim] {ref.name}  {kind}")
+        parts.append(f"[dim]r → open related card[/dim]")
+
     if card.rule:
         parts.append(_section("Rule"))
         parts.append(f"[dim]{_to_rich(card.rule, card.name)}[/dim]")
