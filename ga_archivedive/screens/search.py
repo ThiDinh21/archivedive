@@ -34,6 +34,9 @@ class SearchScreen(Screen):
         width: 1fr;
         margin: 0 0 0 2;
     }
+    CardTable:focus {
+        background: $surface-lighten-1;
+    }
     #status {
         margin: 0 2 1 2;
         height: 1;

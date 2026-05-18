@@ -101,6 +101,9 @@ class CardPanel(VerticalScroll):
         background: $surface;
         scrollbar-size: 1 1;
     }
+    CardPanel:focus {
+        background: $surface-lighten-1;
+    }
     """
 
     def compose(self) -> ComposeResult:
