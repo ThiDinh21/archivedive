@@ -17,12 +17,12 @@ from ..widgets.card_table import CardTable
 class SearchScreen(Screen):
 
     BINDINGS = [
-        Binding("ctrl+left", "prev_page", "Prev page"),
-        Binding("ctrl+right", "next_page", "Next page"),
+        Binding("ctrl+left", "prev_page", "Prev page", key_display="ctrl+<"),
+        Binding("ctrl+right", "next_page", "Next page", key_display="ctrl+>"),
         Binding("s", "focus_search", "Search"),
         Binding("c", "copy_card", "Copy card"),
         Binding("o", "open_image", "Open image"),
-        Binding("ctrl+o", "select_art", "Select art"),
+        Binding("ctrl+o", "select_art", "Select art", key_display="ctrl+o"),
     ]
 
     DEFAULT_CSS = """

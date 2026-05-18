@@ -10,7 +10,7 @@ class ArchiveDiveApp(App):
     SUB_TITLE = "Grand Archive card browser"
 
     BINDINGS = [
-        Binding("f1", "help", "Help", priority=True),
+        Binding("f1", "help", "Help", priority=True, key_display="F1"),
         Binding("?", "help", "Help", priority=True, show=False),
     ]
 
