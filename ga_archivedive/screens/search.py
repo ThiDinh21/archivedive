@@ -9,6 +9,7 @@ from textual.timer import Timer
 from textual.widgets import Footer, Header, Input, Label
 
 from ..models import SearchResponse
+from ..api import BASE_URL
 from ..widgets.card_panel import CardPanel
 from ..widgets.card_table import CardTable
 
@@ -21,6 +22,7 @@ class SearchScreen(Screen):
         Binding("s", "focus_search", "Search"),
         Binding("c", "copy_card", "Copy card"),
         Binding("o", "open_image", "Open image"),
+        Binding("ctrl+o", "select_art", "Select art"),
     ]
 
     DEFAULT_CSS = """
@@ -148,6 +150,30 @@ class SearchScreen(Screen):
 
     def action_open_image(self) -> None:
         self.query_one(CardPanel).action_open_image()
+
+    def action_select_art(self) -> None:
+        from .art_select import ArtSelectScreen
+        panel = self.query_one(CardPanel)
+        card = panel._current_card
+        if card is None:
+            return
+        editions = card.result_editions or card.editions
+        options: list[tuple[str, str]] = []
+        for ed in editions:
+            if not ed.image:
+                continue
+            label_parts: list[str] = []
+            if ed.rarity:
+                label_parts.append(ed.rarity.capitalize())
+            if ed.set and ed.set.name:
+                label_parts.append(ed.set.name)
+            if ed.illustrator:
+                label_parts.append(f"by {ed.illustrator}")
+            label = "  •  ".join(label_parts) if label_parts else "Edition"
+            options.append((label, f"{BASE_URL}{ed.image}"))
+        if not options:
+            return
+        self.app.push_screen(ArtSelectScreen(options))
 
     def action_prev_page(self) -> None:
         if self._page > 1:
