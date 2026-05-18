@@ -1,3 +1,4 @@
+from textual import work
 from textual.app import App
 from textual.binding import Binding
 
@@ -20,6 +21,13 @@ class ArchiveDiveApp(App):
 
     def on_mount(self) -> None:
         self.push_screen(SearchScreen())
+        self._load_known_types()
+
+    @work(thread=False)
+    async def _load_known_types(self) -> None:
+        from .query import set_known_types
+        types = await self.client.fetch_known_types()
+        set_known_types(types)
 
     def action_help(self) -> None:
         from .screens.help import HelpScreen

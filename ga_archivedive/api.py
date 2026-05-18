@@ -233,6 +233,20 @@ class GAClient:
         result.data = apply_client_filters(result.data, filters)
         return result
 
+    async def fetch_known_types(self) -> set[str]:
+        """Fetch all valid card types from the API definitions endpoint."""
+        cache_key = "definitions:types"
+        if cached := self._cache.get(cache_key):
+            return set(cached)
+        try:
+            response = await self._http.get("/option/search")
+            response.raise_for_status()
+            types = {entry["value"] for entry in response.json().get("type", [])}
+            self._cache.set(cache_key, list(types), ttl=86400)  # cache 24h
+            return types
+        except Exception:
+            return set()
+
     def image_url(self, filename: str) -> str:
         return f"{BASE_URL}/cards/images/{filename}"
 

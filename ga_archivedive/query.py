@@ -76,6 +76,20 @@ _KEY_MAP: dict[str, str] = {
     "is": "flag",
 }
 
+# Known card types — used to route t: to type vs subtype param.
+# Populated dynamically at startup via set_known_types(); this is the fallback.
+_KNOWN_TYPES: set[str] = {
+    "ALLY", "CHAMPION", "ACTION", "ATTACK", "GREATER BOON", "LESSER BOON",
+    "ITEM", "MASTERY", "PHANTASIA", "REGALIA", "STATUS", "TOKEN", "UNIQUE", "WEAPON",
+    "DOMAIN",
+}
+
+
+def set_known_types(types: set[str]) -> None:
+    global _KNOWN_TYPES
+    if types:
+        _KNOWN_TYPES = _KNOWN_TYPES | types  # union: never drop known types
+
 # Fields handled client-side (API params broken or unsupported)
 _CLIENT_SIDE = {"oracle", "keyword", "power", "life", "durability", "level",
                 "cost_memory", "cost_reserve", "cost"}
@@ -247,7 +261,9 @@ def to_api_params(filters: list[Filter]) -> dict[str, Any]:
             params["effect"] = v
 
         elif f.key == "type":
-            _append(params, "type", v.upper())
+            upper = v.upper()
+            api_key = "type" if upper in _KNOWN_TYPES else "subtype"
+            _append(params, api_key, upper)
 
         elif f.key == "subtype":
             _append(params, "subtype", v.upper())
@@ -342,7 +358,10 @@ def _check(card: Any, f: Filter) -> bool:
         return val in c.name.lower()
 
     if key == "type":
-        return any(val == t.lower() for t in c.types)
+        upper = val.upper()
+        if upper in _KNOWN_TYPES:
+            return any(val == t.lower() for t in c.types)
+        return any(val == s.lower() for s in c.subtypes)
 
     if key == "subtype":
         return any(val == s.lower() for s in c.subtypes)
