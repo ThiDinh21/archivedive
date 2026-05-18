@@ -12,7 +12,7 @@ from textual.widgets import Static
 from ..models import Card
 
 _PLACEHOLDER = "[dim]Select a card to see details[/dim]"
-_IMAGE_WIDTH = 40
+_IMAGE_WIDTH = 36
 
 
 def _image_to_blocks(image_bytes: bytes, width: int = _IMAGE_WIDTH) -> str:
