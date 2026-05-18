@@ -3,11 +3,13 @@ from __future__ import annotations
 from textual import on, work
 from textual.app import ComposeResult
 from textual.binding import Binding
+from textual.containers import Horizontal
 from textual.screen import Screen
 from textual.timer import Timer
 from textual.widgets import Footer, Header, Input, Label
 
 from ..models import SearchResponse
+from ..widgets.card_panel import CardPanel
 from ..widgets.card_table import CardTable
 
 
@@ -25,9 +27,12 @@ class SearchScreen(Screen):
     #search-input {
         margin: 1 2;
     }
-    CardTable {
+    #main-content {
         height: 1fr;
-        margin: 0 2;
+    }
+    CardTable {
+        width: 1fr;
+        margin: 0 0 0 2;
     }
     #status {
         margin: 0 2 1 2;
@@ -47,7 +52,9 @@ class SearchScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Header()
         yield Input(placeholder="Search cards… (name, effect, type)", id="search-input")
-        yield CardTable(id="card-table")
+        with Horizontal(id="main-content"):
+            yield CardTable(id="card-table")
+            yield CardPanel(id="card-panel")
         yield Label("Loading…", id="status")
         yield Footer()
 
@@ -72,6 +79,10 @@ class SearchScreen(Screen):
     @on(Input.Submitted, "#search-input")
     def on_search_submitted(self, event: Input.Submitted) -> None:
         self.query_one(CardTable).focus()
+
+    @on(CardTable.CardHighlighted)
+    def on_card_highlighted(self, event: CardTable.CardHighlighted) -> None:
+        self.query_one(CardPanel).show(event.card)
 
     def on_key(self, event: object) -> None:
         from textual.events import Key
