@@ -27,10 +27,7 @@ def _image_to_blocks(image_bytes: bytes, width: int = _IMAGE_WIDTH) -> str:
         for col in range(width):
             tr, tg, tb = pixels[row * 2 * width + col]
             br, bg, bb = pixels[(row * 2 + 1) * width + col]
-            top_lum = tr * 0.299 + tg * 0.587 + tb * 0.114
-            bot_lum = br * 0.299 + bg * 0.587 + bb * 0.114
-            char = "▄" if top_lum > bot_lum else "▀"
-            line += f"[rgb({tr},{tg},{tb}) on rgb({br},{bg},{bb})]{char}[/]"
+            line += f"[rgb({tr},{tg},{tb}) on rgb({br},{bg},{bb})]▀[/]"
         lines.append(line)
     return "\n".join(lines)
 
@@ -58,12 +55,14 @@ def _render(card: Card) -> str:
     if meta:
         parts.append("  ".join(meta))
 
-    effect = card.effect or (card.editions[0].effect if card.editions else None)
+    effect = card.effect or (
+        card.editions[0].effect if card.editions else None)
     if effect:
         parts.append(_section("Effect"))
         parts.append(effect)
 
-    has_stats = any(v is not None for v in [card.power, card.life, card.level, card.durability])
+    has_stats = any(v is not None for v in [
+                    card.power, card.life, card.level, card.durability])
     if has_stats or card.speed:
         parts.append(_section("Stats"))
         parts.append("  ".join([
@@ -71,7 +70,8 @@ def _render(card: Card) -> str:
             _stat("HP", card.life),
             _stat("DUR", card.durability),
         ]))
-        parts.append("  ".join([_stat("LVL", card.level), _stat("SPD", card.speed or "—")]))
+        parts.append(
+            "  ".join([_stat("LVL", card.level), _stat("SPD", card.speed or "—")]))
 
     editions = card.result_editions or card.editions
     if editions:
@@ -104,7 +104,8 @@ def _plain_text(card: Card) -> str:
         lines.append(card.display_elements)
     if card.cost and card.cost.type != "none":
         lines.append(f"Cost: {card.display_cost}")
-    effect = card.effect or (card.editions[0].effect if card.editions else None)
+    effect = card.effect or (
+        card.editions[0].effect if card.editions else None)
     if effect:
         lines.append(f"\n{effect}")
     if card.rule:
@@ -116,7 +117,8 @@ def _copy_to_clipboard(text: str) -> None:
     import subprocess
     for cmd in (["xclip", "-selection", "clipboard"], ["xsel", "--clipboard", "--input"]):
         try:
-            subprocess.run(cmd, input=text.encode(), check=True, capture_output=True)
+            subprocess.run(cmd, input=text.encode(),
+                           check=True, capture_output=True)
             return
         except (FileNotFoundError, subprocess.CalledProcessError):
             continue
