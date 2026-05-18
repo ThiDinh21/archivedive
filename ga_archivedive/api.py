@@ -167,14 +167,18 @@ class GAClient:
 
         if len(parsed.groups) == 1:
             return await self._fetch_group(
-                parsed.groups[0], page, page_size
+                parsed.groups[0], page, page_size,
+                sort=parsed.sort, order=parsed.order,
             )
 
         # OR: fetch each group and merge, deduplicated by slug
         seen: set[str] = set()
         merged: list[Card] = []
         for group in parsed.groups:
-            result = await self._fetch_group(group, page=1, page_size=page_size)
+            result = await self._fetch_group(
+                group, page=1, page_size=page_size,
+                sort=parsed.sort, order=parsed.order,
+            )
             for card in result.data:
                 if card.slug not in seen:
                     seen.add(card.slug)
@@ -196,12 +200,14 @@ class GAClient:
         filters: list,
         page: int,
         page_size: int,
+        sort: str = "name",
+        order: str = "ASC",
     ) -> SearchResponse:
         from .query import to_api_params, apply_client_filters
 
         params = to_api_params(filters)
-        params["sort"] = "name"
-        params["order"] = "ASC"
+        params["sort"] = sort
+        params["order"] = order
         params["page"] = page
         params["page_size"] = page_size
 

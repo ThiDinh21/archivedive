@@ -138,7 +138,10 @@ class SearchScreen(Screen):
             table.populate(result.data)
             self._total_pages = result.total_pages
             self._total_cards = result.total_cards
-            self._set_status(result.total_cards, self._page, result.total_pages)
+            from ..query import parse
+            parsed = parse(query)
+            self._set_status(result.total_cards, self._page, result.total_pages,
+                             sort=parsed.sort, order=parsed.order)
         finally:
             table.loading = False
 
@@ -185,9 +188,11 @@ class SearchScreen(Screen):
             self._page += 1
             self._do_search()
 
-    def _set_status(self, total: int, page: int, total_pages: int) -> None:
+    def _set_status(self, total: int, page: int, total_pages: int,
+                    sort: str = "name", order: str = "ASC") -> None:
         page_info = f"  |  page {page}/{total_pages}" if total_pages > 1 else ""
-        nav_hint = "  |  ctrl+←/→ to paginate" if total_pages > 1 else ""
+        nav_hint = "  |  ctrl+</> to paginate" if total_pages > 1 else ""
+        sort_info = f"  |  sort:{sort} {order.lower()}" if sort != "name" or order != "ASC" else ""
         self.query_one("#status", Label).update(
-            f"{total} cards{page_info}{nav_hint}"
+            f"{total} cards{page_info}{nav_hint}{sort_info}"
         )

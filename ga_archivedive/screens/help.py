@@ -63,6 +63,15 @@ _CONTENT = (
         _row(f"{_C}banned:standard{_E}  {_C}banned:p{_E}",  "banned in format"),
     ]) + "\n"
     f"\n"
+    f"[bold]── Sort ─────────────────────────────────[/bold]\n"
+    + "\n".join([
+        _row(f"{_C}sort:rarity{_E}",        "sort by rarity"),
+        _row(f"{_C}sort:cost{_E}",           "sort by cost (memory)"),
+        _row(f"{_C}sort:power{_E}",          "sort by power"),
+        _row(f"{_C}sort:name{_E}",           "sort by name (default)"),
+        _row(f"{_C}order:desc{_E}",          "descending  (default: asc)"),
+    ]) + "\n"
+    f"\n"
     f"[bold]── Flags ────────────────────────────────[/bold]\n"
     + "\n".join([
         _row(f"{_C}is:material{_E}",   "champions and regalia"),

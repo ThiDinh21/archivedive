@@ -94,10 +94,31 @@ class Filter:
         return self.key in _CLIENT_SIDE or self.negated or self.op != "="
 
 
+SORT_MAP: dict[str, str] = {
+    "name": "name",
+    "cost": "cost_memory", "c": "cost_memory",
+    "m": "cost_memory", "memory": "cost_memory",
+    "res": "cost_reserve", "reserve": "cost_reserve",
+    "rarity": "rarity", "r": "rarity",
+    "power": "power", "pow": "power",
+    "life": "life",
+    "level": "level", "lvl": "level",
+    "durability": "durability", "dur": "durability",
+    "number": "collector_number", "cn": "collector_number",
+}
+
+ORDER_MAP: dict[str, str] = {
+    "asc": "ASC", "a": "ASC",
+    "desc": "DESC", "d": "DESC",
+}
+
+
 @dataclass
 class ParsedQuery:
     # OR-groups of AND-combined filters
     groups: list[list[Filter]] = field(default_factory=lambda: [[]])
+    sort: str = "name"
+    order: str = "ASC"
 
 
 # ── Tokeniser ──────────────────────────────────────────────────────────────────
@@ -133,15 +154,31 @@ def parse(text: str) -> ParsedQuery:
     if not tokens:
         return ParsedQuery(groups=[[]])
 
-    # Split on OR
-    groups_raw: list[list[str]] = [[]]
+    q = ParsedQuery(groups=[])
+
+    # Extract sort/order modifiers first, leaving the rest for filter parsing
+    remaining: list[str] = []
     for tok in tokens:
+        m = _FILTER_RE.match(tok)
+        if m and not m.group(1):  # no negation
+            raw_key = m.group(2).lower()
+            value = _strip_quotes(m.group(4))
+            if raw_key == "sort":
+                q.sort = SORT_MAP.get(value.lower(), value.lower())
+                continue
+            if raw_key in ("order", "dir"):
+                q.order = ORDER_MAP.get(value.lower(), "ASC")
+                continue
+        remaining.append(tok)
+
+    # Split remaining on OR
+    groups_raw: list[list[str]] = [[]]
+    for tok in remaining:
         if tok.upper() == "OR":
             groups_raw.append([])
         else:
             groups_raw[-1].append(tok)
 
-    q = ParsedQuery(groups=[])
     for raw_group in groups_raw:
         group, name_parts = _parse_group(raw_group)
         if name_parts:
@@ -149,7 +186,9 @@ def parse(text: str) -> ParsedQuery:
         if group:
             q.groups.append(group)
 
-    return q if q.groups else ParsedQuery(groups=[[]])
+    if not q.groups:
+        q.groups = [[]]
+    return q
 
 
 def _parse_group(tokens: list[str]) -> tuple[list[Filter], list[str]]:

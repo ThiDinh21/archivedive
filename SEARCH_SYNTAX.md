@@ -50,6 +50,24 @@ Filters use the format `key:value`. Multiple filters are combined with AND.
 
 ---
 
+## Sorting
+
+Use `sort:` and `order:` to control result ordering.
+
+| Key      | Default | Values                                                       |
+| -------- | ------- | ------------------------------------------------------------ |
+| `sort:`  | `name`  | `name` `cost` `rarity` `power` `life` `level` `dur` `number` |
+| `order:` | `asc`   | `asc` `a` `desc` `d`                                         |
+
+Examples:
+
+    sort:rarity order:desc          highest rarity first
+    sort:cost                       cheapest cards first
+    e:fire sort:power order:desc    fire cards by power descending
+    t:champion sort:level           champions sorted by level
+
+---
+
 ## Quoting phrases
 
 Wrap multi-word values in double quotes to search for an exact phrase.
