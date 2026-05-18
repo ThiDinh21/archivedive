@@ -98,6 +98,12 @@ class SearchScreen(Screen):
         elif isinstance(focused, CardTable) and event.key == "up" and focused.cursor_row == 0:
             self.query_one(Input).focus()
             event.stop()
+        elif isinstance(focused, CardTable) and event.key == "right":
+            self.query_one(CardPanel).focus()
+            event.stop()
+        elif isinstance(focused, CardPanel) and event.key == "left":
+            self.query_one(CardTable).focus()
+            event.stop()
 
     @work(exclusive=True)
     async def _do_search(self) -> None:

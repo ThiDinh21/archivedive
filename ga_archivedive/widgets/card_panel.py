@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 from textual.app import ComposeResult
+from textual.containers import VerticalScroll
 from textual.widget import Widget
 from textual.widgets import Static
-from textual.scroll_view import ScrollView
-from textual.containers import VerticalScroll
 
 from ..models import Card
 
@@ -90,7 +89,9 @@ def _render(card: Card) -> str:
     return "\n".join(parts)
 
 
-class CardPanel(Widget):
+class CardPanel(VerticalScroll):
+
+    can_focus = True
 
     DEFAULT_CSS = """
     CardPanel {
@@ -98,19 +99,15 @@ class CardPanel(Widget):
         border-left: tall $primary-darken-2;
         padding: 1 2;
         background: $surface;
-    }
-    CardPanel VerticalScroll {
-        width: 1fr;
-        height: 1fr;
         scrollbar-size: 1 1;
     }
     """
 
     def compose(self) -> ComposeResult:
-        with VerticalScroll():
-            yield Static(_PLACEHOLDER, id="panel-content", markup=True)
+        yield Static(_PLACEHOLDER, id="panel-content", markup=True)
 
     def show(self, card: Card) -> None:
+        self.scroll_home(animate=False)
         self.query_one("#panel-content", Static).update(_render(card))
 
     def clear(self) -> None:
