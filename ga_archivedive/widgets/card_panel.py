@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import webbrowser
 
 from textual.app import ComposeResult
@@ -11,6 +12,20 @@ from ..models import Card
 from ..api import BASE_URL
 
 _PLACEHOLDER = "[dim]Select a card to see details[/dim]"
+
+
+def _to_rich(text: str) -> str:
+    """Convert GA API markdown (** and * ) to Rich markup."""
+    text = re.sub(r'\*\*(.+?)\*\*', r'[bold]\1[/bold]', text)
+    text = re.sub(r'\*(.+?)\*', r'[italic]\1[/italic]', text)
+    return text
+
+
+def _to_plain(text: str) -> str:
+    """Strip GA API markdown markers for plain text output."""
+    text = re.sub(r'\*\*(.+?)\*\*', r'\1', text)
+    text = re.sub(r'\*(.+?)\*', r'\1', text)
+    return text
 
 
 def _stat(label: str, value: object) -> str:
@@ -43,7 +58,7 @@ def _render(card: Card) -> str:
     effect = card.effect or (card.editions[0].effect if card.editions else None)
     if effect:
         parts.append(_section("Effect"))
-        parts.append(effect)
+        parts.append(_to_rich(effect))
 
     has_stats = any(v is not None for v in [card.power, card.life, card.level, card.durability])
     if has_stats or card.speed:
@@ -70,7 +85,7 @@ def _render(card: Card) -> str:
 
     if card.rule:
         parts.append(_section("Rule"))
-        parts.append(f"[dim]{card.rule}[/dim]")
+        parts.append(f"[dim]{_to_rich(card.rule)}[/dim]")
 
     if editions_with_images:
         parts.append(_section("Images"))
@@ -119,9 +134,9 @@ def _plain_text(card: Card) -> str:
         lines.append(f"Cost: {card.display_cost}")
     effect = card.effect or (card.editions[0].effect if card.editions else None)
     if effect:
-        lines.append(f"\n{effect}")
+        lines.append(f"\n{_to_plain(effect)}")
     if card.rule:
-        lines.append(f"\nRule: {card.rule}")
+        lines.append(f"\nRule: {_to_plain(card.rule)}")
     return "\n".join(lines)
 
 
