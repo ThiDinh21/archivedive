@@ -13,16 +13,36 @@ from ..api import BASE_URL
 
 _PLACEHOLDER = "[dim]Select a card to see details[/dim]"
 
+_SYMBOLS_RICH = {
+    "POWER": "[red]⚔[/red]",
+    "LIFE":  "[green]♥[/green]",
+    "REST":  "[bright_white]↷[/bright_white]",
+}
+_SYMBOLS_PLAIN = {"POWER": "⚔", "LIFE": "♥", "REST": "↷"}
 
-def _to_rich(text: str) -> str:
-    """Convert GA API markdown (** and * ) to Rich markup."""
+
+def _short_name(card_name: str) -> str:
+    return card_name.split(",")[0].strip()
+
+
+def _sub_symbols(text: str, card_name: str, symbol_map: dict[str, str]) -> str:
+    text = text.replace("CARDNAME", _short_name(card_name))
+    for token, replacement in symbol_map.items():
+        text = text.replace(f"[{token}]", replacement)
+    return text
+
+
+def _to_rich(text: str, card_name: str = "") -> str:
+    """Convert GA API markdown and symbol placeholders to Rich markup."""
+    text = _sub_symbols(text, card_name, _SYMBOLS_RICH)
     text = re.sub(r'\*\*(.+?)\*\*', r'[bold]\1[/bold]', text)
     text = re.sub(r'\*(.+?)\*', r'[italic]\1[/italic]', text)
     return text
 
 
-def _to_plain(text: str) -> str:
-    """Strip GA API markdown markers for plain text output."""
+def _to_plain(text: str, card_name: str = "") -> str:
+    """Strip GA API markdown and replace symbol placeholders for plain text."""
+    text = _sub_symbols(text, card_name, _SYMBOLS_PLAIN)
     text = re.sub(r'\*\*(.+?)\*\*', r'\1', text)
     text = re.sub(r'\*(.+?)\*', r'\1', text)
     return text
@@ -58,7 +78,7 @@ def _render(card: Card) -> str:
     effect = card.effect or (card.editions[0].effect if card.editions else None)
     if effect:
         parts.append(_section("Effect"))
-        parts.append(_to_rich(effect))
+        parts.append(_to_rich(effect, card.name))
 
     has_stats = any(v is not None for v in [card.power, card.life, card.level, card.durability])
     if has_stats or card.speed:
@@ -85,7 +105,7 @@ def _render(card: Card) -> str:
 
     if card.rule:
         parts.append(_section("Rule"))
-        parts.append(f"[dim]{_to_rich(card.rule)}[/dim]")
+        parts.append(f"[dim]{_to_rich(card.rule, card.name)}[/dim]")
 
     if editions_with_images:
         parts.append(_section("Images"))
@@ -134,7 +154,7 @@ def _plain_text(card: Card) -> str:
         lines.append(f"Cost: {card.display_cost}")
     effect = card.effect or (card.editions[0].effect if card.editions else None)
     if effect:
-        lines.append(f"\n{_to_plain(effect)}")
+        lines.append(f"\n{_to_plain(effect, card.name)}")
     return "\n".join(lines)
 
 
