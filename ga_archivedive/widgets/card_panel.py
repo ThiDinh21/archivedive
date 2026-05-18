@@ -135,8 +135,6 @@ def _plain_text(card: Card) -> str:
     effect = card.effect or (card.editions[0].effect if card.editions else None)
     if effect:
         lines.append(f"\n{_to_plain(effect)}")
-    if card.rule:
-        lines.append(f"\nRule: {_to_plain(card.rule)}")
     return "\n".join(lines)
 
 
