@@ -18,6 +18,7 @@ class SearchScreen(Screen):
     BINDINGS = [
         Binding("ctrl+left", "prev_page", "Prev page"),
         Binding("ctrl+right", "next_page", "Next page"),
+        Binding("s", "focus_search", "Search"),
         Binding("c", "copy_card", "Copy card"),
         Binding("o", "open_image", "Open image"),
     ]
@@ -68,10 +69,15 @@ class SearchScreen(Screen):
 
     @work(exclusive=True)
     async def _load_initial(self) -> None:
-        client = self.app.client  # type: ignore[attr-defined]
-        cards = await client.random(count=50)
-        self.query_one(CardTable).populate(cards)
-        self._set_status(len(cards), 1, 1)
+        table = self.query_one(CardTable)
+        table.loading = True
+        try:
+            client = self.app.client  # type: ignore[attr-defined]
+            cards = await client.random(count=50)
+            table.populate(cards)
+            self._set_status(len(cards), 1, 1)
+        finally:
+            table.loading = False
 
     @on(Input.Changed, "#search-input")
     def on_search_changed(self, event: Input.Changed) -> None:
@@ -97,7 +103,7 @@ class SearchScreen(Screen):
         if isinstance(focused, Input) and event.key == "down":
             self.query_one(CardTable).focus()
             event.stop()
-        elif isinstance(focused, CardTable) and event.key in ("escape", "s"):
+        elif isinstance(focused, CardTable) and event.key == "escape":
             self.query_one(Input).focus()
             event.stop()
         elif isinstance(focused, CardTable) and event.key == "up" and focused.cursor_row == 0:
@@ -109,23 +115,33 @@ class SearchScreen(Screen):
         elif isinstance(focused, CardPanel) and event.key == "left":
             self.query_one(CardTable).focus()
             event.stop()
+        elif event.key.isdigit() and not isinstance(focused, Input):
+            self.query_one(CardPanel).on_key(event)
 
     @work(exclusive=True)
     async def _do_search(self) -> None:
-        query = self._last_query.strip()
-        client = self.app.client  # type: ignore[attr-defined]
+        table = self.query_one(CardTable)
+        table.loading = True
+        try:
+            query = self._last_query.strip()
+            client = self.app.client  # type: ignore[attr-defined]
 
-        if not query:
-            cards = await client.random(count=50)
-            self.query_one(CardTable).populate(cards)
-            self._set_status(len(cards), 1, 1)
-            return
+            if not query:
+                cards = await client.random(count=50)
+                table.populate(cards)
+                self._set_status(len(cards), 1, 1)
+                return
 
-        result: SearchResponse = await client.search(name=query, page=self._page)
-        self.query_one(CardTable).populate(result.data)
-        self._total_pages = result.total_pages
-        self._total_cards = result.total_cards
-        self._set_status(result.total_cards, self._page, result.total_pages)
+            result: SearchResponse = await client.search(name=query, page=self._page)
+            table.populate(result.data)
+            self._total_pages = result.total_pages
+            self._total_cards = result.total_cards
+            self._set_status(result.total_cards, self._page, result.total_pages)
+        finally:
+            table.loading = False
+
+    def action_focus_search(self) -> None:
+        self.query_one(Input).focus()
 
     def action_copy_card(self) -> None:
         self.query_one(CardPanel).action_copy_card()
@@ -145,7 +161,7 @@ class SearchScreen(Screen):
 
     def _set_status(self, total: int, page: int, total_pages: int) -> None:
         page_info = f"  |  page {page}/{total_pages}" if total_pages > 1 else ""
-        nav_hint = "  |  [ / ] to paginate" if total_pages > 1 else ""
+        nav_hint = "  |  ctrl+←/→ to paginate" if total_pages > 1 else ""
         self.query_one("#status", Label).update(
-            f"{total} cards{page_info}{nav_hint}  |  enter to view card"
+            f"{total} cards{page_info}{nav_hint}"
         )

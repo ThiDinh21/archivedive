@@ -24,6 +24,10 @@ def _section(title: str) -> str:
 def _render(card: Card) -> str:
     parts: list[str] = []
 
+    editions_with_images = [
+        ed for ed in (card.result_editions or card.editions) if ed.image
+    ]
+
     parts.append(f"[bold yellow]{card.name}[/bold yellow]")
     if card.display_types:
         parts.append(f"[cyan]{card.display_types}[/cyan]")
@@ -68,10 +72,36 @@ def _render(card: Card) -> str:
         parts.append(_section("Rule"))
         parts.append(f"[dim]{card.rule}[/dim]")
 
-    if card.image_filename:
-        parts.append(_section("Image"))
-        parts.append(f"[dim]{BASE_URL}{card.image_filename}[/dim]")
-        parts.append("[dim]o → open in browser[/dim]")
+    if editions_with_images:
+        parts.append(_section("Images"))
+        numbered = editions_with_images[:9]
+        overflow = editions_with_images[9:]
+        if len(editions_with_images) > 1:
+            keys = " ".join(f"[bold cyan]{i}[/bold cyan]" for i in range(1, len(numbered) + 1))
+            hint = f"[dim]Press {keys} to open · o opens latest[/dim]"
+            if overflow:
+                hint += f"[dim] · +{len(overflow)} more (copy URL)[/dim]"
+            parts.append(hint)
+        for i, ed in enumerate(numbered, 1):
+            label_parts: list[str] = []
+            if ed.rarity:
+                label_parts.append(ed.rarity.capitalize())
+            if ed.set and ed.set.name:
+                label_parts.append(ed.set.name)
+            label = "  •  ".join(label_parts) if label_parts else "Edition"
+            parts.append(f"[bold cyan]\\[{i}][/bold cyan] [dim]{label}[/dim]")
+            parts.append(f"[dim]{BASE_URL}{ed.image}[/dim]")
+        for ed in overflow:
+            label_parts = []
+            if ed.rarity:
+                label_parts.append(ed.rarity.capitalize())
+            if ed.set and ed.set.name:
+                label_parts.append(ed.set.name)
+            label = "  •  ".join(label_parts) if label_parts else "Edition"
+            parts.append(f"[dim]    {label}[/dim]")
+            parts.append(f"[dim]{BASE_URL}{ed.image}[/dim]")
+        if len(editions_with_images) == 1:
+            parts.append("[dim]o → open in browser[/dim]")
 
     flavor = card.flavor or (editions[0].flavor if editions else None)
     if flavor:
@@ -111,7 +141,6 @@ class CardPanel(VerticalScroll):
     can_focus = True
 
     BINDINGS = [
-        Binding("o", "open_image", "Open image", show=False),
         Binding("ctrl+shift+c", "copy_card", "Copy card text", show=False),
     ]
 
@@ -151,7 +180,26 @@ class CardPanel(VerticalScroll):
         self.app.notify(f"Copied: {self._current_card.name}", timeout=2)
 
     def action_open_image(self) -> None:
-        if self._current_card is None or not self._current_card.image_filename:
+        urls = self._image_urls()
+        if not urls:
             return
-        webbrowser.open(f"{BASE_URL}{self._current_card.image_filename}")
-        self.app.notify("Opening image in browser…", timeout=2)
+        webbrowser.open(urls[-1])
+        self.app.notify("Opening latest printing in browser…", timeout=2)
+
+    def on_key(self, event: object) -> None:
+        from textual.events import Key
+        if not isinstance(event, Key):
+            return
+        if event.key.isdigit():
+            idx = int(event.key) - 1
+            urls = self._image_urls()
+            if 0 <= idx < len(urls):
+                webbrowser.open(urls[idx])
+                self.app.notify(f"Opening image {idx + 1} in browser…", timeout=2)
+                event.stop()
+
+    def _image_urls(self) -> list[str]:
+        if self._current_card is None:
+            return []
+        editions = self._current_card.result_editions or self._current_card.editions
+        return [f"{BASE_URL}{ed.image}" for ed in editions if ed.image]
