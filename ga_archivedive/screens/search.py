@@ -4,9 +4,18 @@ from textual import on, work
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal
+from textual.events import Focus
 from textual.screen import Screen
 from textual.timer import Timer
 from textual.widgets import Footer, Header, Input, Label
+
+
+class _SearchInput(Input):
+    def on_focus(self, event: Focus) -> None:
+        self.call_after_refresh(self._deselect)
+
+    def _deselect(self) -> None:
+        self.cursor_position = len(self.value)
 
 from ..models import SearchResponse
 from ..api import BASE_URL
@@ -59,7 +68,7 @@ class SearchScreen(Screen):
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield Input(placeholder="Search cards… (name, effect, type)", id="search-input")
+        yield _SearchInput(placeholder="Search cards… (name, effect, type)", id="search-input")
         with Horizontal(id="main-content"):
             yield CardTable(id="card-table")
             yield CardPanel(id="card-panel")
