@@ -102,7 +102,7 @@ class SearchScreen(Screen):
         if not isinstance(event, Key):
             return
         focused = self.focused
-        if isinstance(focused, Input) and event.key == "down":
+        if isinstance(focused, Input) and event.key in ("down", "escape"):
             self.query_one(CardTable).focus()
             event.stop()
         elif isinstance(focused, CardTable) and event.key == "escape":
