@@ -18,6 +18,8 @@ class SearchScreen(Screen):
     BINDINGS = [
         Binding("ctrl+left", "prev_page", "Prev page"),
         Binding("ctrl+right", "next_page", "Next page"),
+        Binding("c", "copy_card", "Copy card"),
+        Binding("o", "open_image", "Open image"),
     ]
 
     DEFAULT_CSS = """
@@ -124,6 +126,12 @@ class SearchScreen(Screen):
         self._total_pages = result.total_pages
         self._total_cards = result.total_cards
         self._set_status(result.total_cards, self._page, result.total_pages)
+
+    def action_copy_card(self) -> None:
+        self.query_one(CardPanel).action_copy_card()
+
+    def action_open_image(self) -> None:
+        self.query_one(CardPanel).action_open_image()
 
     def action_prev_page(self) -> None:
         if self._page > 1:
