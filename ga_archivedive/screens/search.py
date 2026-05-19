@@ -241,7 +241,7 @@ class SearchScreen(Screen):
     def _set_status(self, total: int, page: int, total_pages: int,
                     sort: str = "name", order: str = "ASC") -> None:
         page_info = f"  |  page {page}/{total_pages}" if total_pages > 1 else ""
-        nav_hint = "  |  ctrl+</> to paginate" if total_pages > 1 else ""
+        nav_hint = "  |  ctrl+</> prev/next page" if total_pages > 1 else ""
         sort_info = f"  |  sort:{sort} {order.lower()}" if sort != "name" or order != "ASC" else ""
         self.query_one("#status", Label).update(
             f"{total} cards{page_info}{nav_hint}{sort_info}"
