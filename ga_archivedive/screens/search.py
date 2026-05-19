@@ -11,11 +11,25 @@ from textual.widgets import Footer, Header, Input, Label
 
 
 class _SearchInput(Input):
+    BINDINGS = [Binding("ctrl+c", "copy_value", "Copy", show=False)]
+
     def on_focus(self, event: Focus) -> None:
         self.call_after_refresh(self._deselect)
 
     def _deselect(self) -> None:
         self.cursor_position = len(self.value)
+
+    def action_copy_value(self) -> None:
+        import subprocess
+        for cmd in (["xclip", "-selection", "clipboard"], ["xsel", "--clipboard", "--input"]):
+            try:
+                subprocess.run(cmd, input=self.value.encode(), check=True, capture_output=True)
+                self.app.notify("Copied", timeout=2)
+                return
+            except (FileNotFoundError, subprocess.CalledProcessError):
+                continue
+        self.app.notify("No clipboard tool found (install xclip or xsel)", timeout=3)
+
 
 from ..models import SearchResponse
 from ..api import BASE_URL
@@ -26,8 +40,8 @@ from ..widgets.card_table import CardTable
 class SearchScreen(Screen):
 
     BINDINGS = [
-        Binding("ctrl+left", "prev_page", "Prev page", key_display="ctrl+<"),
-        Binding("ctrl+right", "next_page", "Next page", key_display="ctrl+>"),
+        Binding("ctrl+left", "prev_page", "Prev page", key_display="ctrl+<", show=False),
+        Binding("ctrl+right", "next_page", "Next page", key_display="ctrl+>", show=False),
         Binding("s", "focus_search", "Search"),
         Binding("f1", "help", "Syntax help", priority=True, key_display="F1"),
         Binding("c", "copy_card", "Copy card"),
@@ -155,6 +169,11 @@ class SearchScreen(Screen):
                              sort=parsed.sort, order=parsed.order)
         finally:
             table.loading = False
+
+    def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
+        if action == "select_art":
+            return not isinstance(self.focused, Input)
+        return True
 
     def action_help(self) -> None:
         self.app.action_help()
