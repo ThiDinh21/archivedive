@@ -91,6 +91,10 @@ class SearchScreen(Screen):
         yield Label("Loading…", id="status")
         yield Footer()
 
+    def on_unmount(self) -> None:
+        if self._search_timer:
+            self._search_timer.stop()
+
     def on_mount(self) -> None:
         self._load_initial()
 
