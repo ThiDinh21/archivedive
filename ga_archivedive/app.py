@@ -11,8 +11,8 @@ class ArchiveDiveApp(App):
     SUB_TITLE = "Grand Archive card browser"
 
     BINDINGS = [
-        Binding("f1", "help", "Syntax help", priority=True, key_display="F1"),
-        Binding("?", "help", "Help", priority=True, show=False),
+        Binding("f1", "help", "Syntax help", priority=True, key_display="F1", show=False),
+        Binding("?", "help", "Syntax help", priority=True, show=False),
     ]
 
     def __init__(self) -> None:

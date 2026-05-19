@@ -29,6 +29,7 @@ class SearchScreen(Screen):
         Binding("ctrl+left", "prev_page", "Prev page", key_display="ctrl+<"),
         Binding("ctrl+right", "next_page", "Next page", key_display="ctrl+>"),
         Binding("s", "focus_search", "Search"),
+        Binding("f1", "help", "Syntax help", priority=True, key_display="F1"),
         Binding("c", "copy_card", "Copy card"),
         Binding("o", "open_image", "Open image"),
         Binding("ctrl+o", "select_art", "Select art", key_display="ctrl+o"),
@@ -154,6 +155,9 @@ class SearchScreen(Screen):
                              sort=parsed.sort, order=parsed.order)
         finally:
             table.loading = False
+
+    def action_help(self) -> None:
+        self.app.action_help()
 
     def action_focus_search(self) -> None:
         self.query_one(Input).focus()
