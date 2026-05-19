@@ -96,7 +96,7 @@ def _render(card: Card) -> str:
         parts.append(_section("Edition"))
         ed_parts: list[str] = []
         if ed.rarity:
-            ed_parts.append(ed.rarity.capitalize())
+            ed_parts.append(ed.rarity_name or ed.rarity)
         if ed.set and ed.set.name:
             ed_parts.append(ed.set.name)
         if ed.illustrator:
@@ -142,7 +142,7 @@ def _render(card: Card) -> str:
         for i, ed in enumerate(numbered, 1):
             label_parts: list[str] = []
             if ed.rarity:
-                label_parts.append(ed.rarity.capitalize())
+                label_parts.append(ed.rarity_name or ed.rarity)
             if ed.set and ed.set.name:
                 label_parts.append(ed.set.name)
             label = "  •  ".join(label_parts) if label_parts else "Edition"
@@ -151,7 +151,7 @@ def _render(card: Card) -> str:
         for ed in overflow:
             label_parts = []
             if ed.rarity:
-                label_parts.append(ed.rarity.capitalize())
+                label_parts.append(ed.rarity_name or ed.rarity)
             if ed.set and ed.set.name:
                 label_parts.append(ed.set.name)
             label = "  •  ".join(label_parts) if label_parts else "Edition"

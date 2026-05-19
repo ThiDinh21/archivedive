@@ -35,7 +35,7 @@ class CardTable(DataTable[str]):
         self.clear()
         for card in cards:
             editions = card.result_editions or card.editions
-            rarity = editions[0].rarity.capitalize() if editions and editions[0].rarity else "-"
+            rarity = editions[0].rarity_short if editions and editions[0].rarity else "-"
             self.add_row(
                 card.name,
                 card.display_types,

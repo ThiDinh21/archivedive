@@ -22,6 +22,24 @@ class SetInfo(BaseModel):
     language: str | None = None
 
 
+_RARITY_NAMES: dict[str, str] = {
+    "1": "Common",
+    "2": "Uncommon",
+    "3": "Rare",
+    "4": "Super Rare",
+    "5": "Ultra Rare",
+    "6": "Promo",
+    "7": "Collector Super Rare",
+    "8": "Collector Ultra Rare",
+    "9": "Collector Promo Rare",
+}
+
+_RARITY_SHORT: dict[str, str] = {
+    "1": "C", "2": "U", "3": "R", "4": "SR", "5": "UR",
+    "6": "PR", "7": "CSR", "8": "CUR", "9": "CPR",
+}
+
+
 class CardEdition(BaseModel):
     slug: str | None = None
     uuid: str | None = None
@@ -34,6 +52,18 @@ class CardEdition(BaseModel):
         if v is None:
             return None
         return str(v)
+
+    @property
+    def rarity_name(self) -> str | None:
+        if self.rarity is None:
+            return None
+        return _RARITY_NAMES.get(self.rarity, self.rarity)
+
+    @property
+    def rarity_short(self) -> str | None:
+        if self.rarity is None:
+            return None
+        return _RARITY_SHORT.get(self.rarity, self.rarity)
     illustrator: str | None = None
     image: str | None = None
     effect: str | None = None

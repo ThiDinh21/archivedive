@@ -194,7 +194,7 @@ class SearchScreen(Screen):
                 continue
             label_parts: list[str] = []
             if ed.rarity:
-                label_parts.append(ed.rarity.capitalize())
+                label_parts.append(ed.rarity_name or ed.rarity)
             if ed.set and ed.set.name:
                 label_parts.append(ed.set.name)
             if ed.illustrator:
