@@ -231,8 +231,11 @@ class CardPanel(VerticalScroll):
     def action_copy_card(self) -> None:
         if self._current_card is None:
             return
-        _copy_to_clipboard(_plain_text(self._current_card))
-        self.app.notify(f"Copied: {self._current_card.name}", timeout=2)
+        try:
+            _copy_to_clipboard(_plain_text(self._current_card))
+            self.app.notify(f"Copied: {self._current_card.name}", timeout=2)
+        except RuntimeError as e:
+            self.app.notify(str(e), severity="error", timeout=4)
 
     def action_open_image(self) -> None:
         urls = self._image_urls()
