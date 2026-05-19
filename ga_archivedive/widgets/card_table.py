@@ -20,7 +20,7 @@ class CardTable(DataTable[str]):
 
     def __init__(self, **kwargs: object) -> None:
         super().__init__(**kwargs)
-        self._cards: list[Card] = []
+        self._cards: dict[str, Card] = {}
 
     def on_mount(self) -> None:
         self.cursor_type = "row"
@@ -31,7 +31,7 @@ class CardTable(DataTable[str]):
         self.add_column("Rarity", width=10)
 
     def populate(self, cards: list[Card]) -> None:
-        self._cards = cards
+        self._cards = {card.slug: card for card in cards}
         self.clear()
         for card in cards:
             editions = card.result_editions or card.editions
@@ -60,4 +60,4 @@ class CardTable(DataTable[str]):
     def _card_for_key(self, key: str | None) -> Card | None:
         if key is None:
             return None
-        return next((c for c in self._cards if c.slug == key), None)
+        return self._cards.get(key)
