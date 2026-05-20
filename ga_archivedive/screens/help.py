@@ -19,7 +19,7 @@ _E = "[/cyan]"
 _CONTENT = (
     f"[bold yellow]Search Syntax Reference[/bold yellow]\n"
     f"\n"
-    f"[dim]key:value filters combined with AND. F1 or ? to close.[/dim]\n"
+    f"[dim]key:value filters combined with AND (element uses OR). F1 or esc to close.[/dim]\n"
     f"[dim]ctrl+c copies search bar text · ctrl+q to quit[/dim]\n"
     f"\n"
     f"[bold]── Text ─────────────────────────────────[/bold]\n"

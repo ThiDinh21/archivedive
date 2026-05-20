@@ -41,6 +41,8 @@ FORMAT_MAP: dict[str, str] = {
     "d": "DRAFT", "draft": "DRAFT",
 }
 
+SPEED_VALUES: frozenset[str] = frozenset({"fast", "slow"})
+
 FLAGS: dict[str, str] = {
     "material": "t:champion OR t:regalia",
     "permanent": (
@@ -105,7 +107,15 @@ class Filter:
 
     @property
     def is_client_side(self) -> bool:
-        return self.key in _CLIENT_SIDE or self.negated or self.op != "="
+        if self.key in _CLIENT_SIDE or self.negated or self.op != "=":
+            return True
+        if self.key == "rarity" and not RARITY_MAP.get(self.value.lower().replace(" ", "")):
+            return True
+        if self.key in ("legal", "banned") and not FORMAT_MAP.get(self.value.lower()):
+            return True
+        if self.key == "speed" and self.value.lower() not in SPEED_VALUES:
+            return True
+        return False
 
 
 SORT_MAP: dict[str, str] = {
@@ -376,7 +386,7 @@ def _check(card: Any, f: Filter) -> bool:
     if key == "rarity":
         rarity_num = RARITY_MAP.get(val.replace(" ", ""))
         if rarity_num is None:
-            return True
+            return False
         eds = c.result_editions or c.editions
         return any(str(ed.rarity) == str(rarity_num) for ed in eds)
 
@@ -420,6 +430,9 @@ def _check(card: Any, f: Filter) -> bool:
             return _compare(int(c.cost.value or 0), op, int(val))
         except (ValueError, TypeError):
             return False
+
+    if key in ("legal", "banned"):
+        return False
 
     return True
 

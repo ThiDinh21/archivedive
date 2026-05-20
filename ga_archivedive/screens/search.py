@@ -174,8 +174,9 @@ class SearchScreen(Screen):
             self._total_cards = result.total_cards
             from ..query import parse
             parsed = parse(query)
-            self._set_status(result.total_cards, self._page, result.total_pages,
-                             sort=parsed.sort, order=parsed.order)
+            total = result.total_cards if result.data else 0
+            pages = result.total_pages if result.data else 1
+            self._set_status(total, self._page, pages, sort=parsed.sort, order=parsed.order)
         except httpx.HTTPStatusError as e:
             self.app.notify(f"API error: {e.response.status_code}", severity="error", timeout=5)
         except httpx.RequestError:
