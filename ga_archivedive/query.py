@@ -332,7 +332,6 @@ def _append(params: dict[str, Any], key: str, value: str) -> None:
 
 def apply_client_filters(cards: list[Any], filters: list[Filter]) -> list[Any]:
     """Apply filters that the API can't handle."""
-    import re as _re
     result = cards
     for f in filters:
         if not f.is_client_side:
@@ -352,7 +351,6 @@ def _matches(card: Any, f: Filter) -> bool:
 
 def _check(card: Any, f: Filter) -> bool:
     from .models import Card
-    import re as _re
 
     c: Card = card
     key, val, op = f.key, f.value.lower(), f.op
@@ -361,7 +359,7 @@ def _check(card: Any, f: Filter) -> bool:
         return val in (c.effect or "").lower()
 
     if key == "keyword":
-        pattern = _re.compile(r'\*\*' + _re.escape(f.value) + r'\*\*', _re.IGNORECASE)
+        pattern = re.compile(r'\*\*' + re.escape(f.value) + r'\*\*', re.IGNORECASE)
         return bool(pattern.search(c.effect or ""))
 
     if key == "name":

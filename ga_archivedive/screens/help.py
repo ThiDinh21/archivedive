@@ -4,7 +4,7 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import VerticalScroll
 from textual.screen import ModalScreen
-from textual.widgets import Label, Static
+from textual.widgets import Static
 
 def _row(example: str, desc: str, width: int = 26) -> str:
     """Build a padded two-column row, accounting for visible chars only."""

@@ -3,6 +3,9 @@ from __future__ import annotations
 import re
 import webbrowser
 
+_RE_BOLD = re.compile(r'\*\*(.+?)\*\*')
+_RE_ITALIC = re.compile(r'\*(.+?)\*')
+
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import VerticalScroll
@@ -35,16 +38,16 @@ def _sub_symbols(text: str, card_name: str, symbol_map: dict[str, str]) -> str:
 def _to_rich(text: str, card_name: str = "") -> str:
     """Convert GA API markdown and symbol placeholders to Rich markup."""
     text = _sub_symbols(text, card_name, _SYMBOLS_RICH)
-    text = re.sub(r'\*\*(.+?)\*\*', r'[bold]\1[/bold]', text)
-    text = re.sub(r'\*(.+?)\*', r'[italic]\1[/italic]', text)
+    text = _RE_BOLD.sub(r'[bold]\1[/bold]', text)
+    text = _RE_ITALIC.sub(r'[italic]\1[/italic]', text)
     return text
 
 
 def _to_plain(text: str, card_name: str = "") -> str:
     """Strip GA API markdown and replace symbol placeholders for plain text."""
     text = _sub_symbols(text, card_name, _SYMBOLS_PLAIN)
-    text = re.sub(r'\*\*(.+?)\*\*', r'\1', text)
-    text = re.sub(r'\*(.+?)\*', r'\1', text)
+    text = _RE_BOLD.sub(r'\1', text)
+    text = _RE_ITALIC.sub(r'\1', text)
     return text
 
 

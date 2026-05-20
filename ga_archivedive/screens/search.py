@@ -1,4 +1,8 @@
 from __future__ import annotations
+from ..widgets.card_table import CardTable
+from ..widgets.card_panel import CardPanel
+from ..api import BASE_URL
+from ..models import SearchResponse
 
 import httpx
 from textual import on, work
@@ -24,25 +28,23 @@ class _SearchInput(Input):
         import subprocess
         for cmd in (["xclip", "-selection", "clipboard"], ["xsel", "--clipboard", "--input"]):
             try:
-                subprocess.run(cmd, input=self.value.encode(), check=True, capture_output=True)
+                subprocess.run(cmd, input=self.value.encode(),
+                               check=True, capture_output=True)
                 self.app.notify("Copied", timeout=2)
                 return
             except (FileNotFoundError, subprocess.CalledProcessError):
                 continue
-        self.app.notify("No clipboard tool found (install xclip or xsel)", timeout=3)
-
-
-from ..models import SearchResponse
-from ..api import BASE_URL
-from ..widgets.card_panel import CardPanel
-from ..widgets.card_table import CardTable
+        self.app.notify(
+            "No clipboard tool found (install xclip or xsel)", timeout=3)
 
 
 class SearchScreen(Screen):
 
     BINDINGS = [
-        Binding("ctrl+left", "prev_page", "Prev page", key_display="ctrl+<", show=False),
-        Binding("ctrl+right", "next_page", "Next page", key_display="ctrl+>", show=False),
+        Binding("ctrl+left", "prev_page", "Prev page",
+                key_display="ctrl+<", show=False),
+        Binding("ctrl+right", "next_page", "Next page",
+                key_display="ctrl+>", show=False),
         Binding("s", "focus_search", "Search"),
         Binding("f1", "help", "Syntax help", priority=True, key_display="F1"),
         Binding("c", "copy_card", "Copy card"),
@@ -109,9 +111,11 @@ class SearchScreen(Screen):
             table.populate(cards)
             self._set_status(len(cards), 1, 1)
         except httpx.HTTPStatusError as e:
-            self.app.notify(f"API error: {e.response.status_code}", severity="error", timeout=5)
+            self.app.notify(
+                f"API error: {e.response.status_code}", severity="error", timeout=5)
         except httpx.RequestError:
-            self.app.notify("Network error: could not reach GA API", severity="error", timeout=5)
+            self.app.notify("Network error: could not reach GA API",
+                            severity="error", timeout=5)
         finally:
             table.loading = False
 
@@ -176,11 +180,14 @@ class SearchScreen(Screen):
             parsed = parse(query)
             total = result.total_cards if result.data else 0
             pages = result.total_pages if result.data else 1
-            self._set_status(total, self._page, pages, sort=parsed.sort, order=parsed.order)
+            self._set_status(total, self._page, pages,
+                             sort=parsed.sort, order=parsed.order)
         except httpx.HTTPStatusError as e:
-            self.app.notify(f"API error: {e.response.status_code}", severity="error", timeout=5)
+            self.app.notify(
+                f"API error: {e.response.status_code}", severity="error", timeout=5)
         except httpx.RequestError:
-            self.app.notify("Network error: could not reach GA API", severity="error", timeout=5)
+            self.app.notify("Network error: could not reach GA API",
+                            severity="error", timeout=5)
         finally:
             table.loading = False
 
@@ -207,10 +214,12 @@ class SearchScreen(Screen):
         card = panel._current_card
         if card is None or not (card.references or card.referenced_by):
             return
+
         def on_selected(slug: str | None) -> None:
             if slug:
                 self._load_related(slug)
-        self.app.push_screen(RelatedCardsScreen(card.references, card.referenced_by), on_selected)
+        self.app.push_screen(RelatedCardsScreen(
+            card.references, card.referenced_by), on_selected)
 
     @work(exclusive=False)
     async def _load_related(self, slug: str) -> None:
@@ -219,9 +228,11 @@ class SearchScreen(Screen):
             card = await client.get_card(slug)
             self.query_one(CardPanel).show(card)
         except httpx.HTTPStatusError as e:
-            self.app.notify(f"API error: {e.response.status_code}", severity="error", timeout=5)
+            self.app.notify(
+                f"API error: {e.response.status_code}", severity="error", timeout=5)
         except httpx.RequestError:
-            self.app.notify("Network error: could not reach GA API", severity="error", timeout=5)
+            self.app.notify("Network error: could not reach GA API",
+                            severity="error", timeout=5)
 
     def action_select_art(self) -> None:
         from .art_select import ArtSelectScreen
