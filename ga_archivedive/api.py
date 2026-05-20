@@ -41,7 +41,12 @@ class _Cache:
             self._db.execute("DELETE FROM cache WHERE key = ?", (key,))
             self._db.commit()
             return None
-        return json.loads(value)
+        try:
+            return json.loads(value)
+        except json.JSONDecodeError:
+            self._db.execute("DELETE FROM cache WHERE key = ?", (key,))
+            self._db.commit()
+            return None
 
     def set(self, key: str, value: Any, ttl: int = CACHE_TTL) -> None:
         self._db.execute(
