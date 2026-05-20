@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import httpx
 from textual import on, work
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -107,6 +108,10 @@ class SearchScreen(Screen):
             cards = await client.random(count=50)
             table.populate(cards)
             self._set_status(len(cards), 1, 1)
+        except httpx.HTTPStatusError as e:
+            self.app.notify(f"API error: {e.response.status_code}", severity="error", timeout=5)
+        except httpx.RequestError:
+            self.app.notify("Network error: could not reach GA API", severity="error", timeout=5)
         finally:
             table.loading = False
 
@@ -171,6 +176,10 @@ class SearchScreen(Screen):
             parsed = parse(query)
             self._set_status(result.total_cards, self._page, result.total_pages,
                              sort=parsed.sort, order=parsed.order)
+        except httpx.HTTPStatusError as e:
+            self.app.notify(f"API error: {e.response.status_code}", severity="error", timeout=5)
+        except httpx.RequestError:
+            self.app.notify("Network error: could not reach GA API", severity="error", timeout=5)
         finally:
             table.loading = False
 
@@ -205,8 +214,13 @@ class SearchScreen(Screen):
     @work(exclusive=False)
     async def _load_related(self, slug: str) -> None:
         client = self.app.client  # type: ignore[attr-defined]
-        card = await client.get_card(slug)
-        self.query_one(CardPanel).show(card)
+        try:
+            card = await client.get_card(slug)
+            self.query_one(CardPanel).show(card)
+        except httpx.HTTPStatusError as e:
+            self.app.notify(f"API error: {e.response.status_code}", severity="error", timeout=5)
+        except httpx.RequestError:
+            self.app.notify("Network error: could not reach GA API", severity="error", timeout=5)
 
     def action_select_art(self) -> None:
         from .art_select import ArtSelectScreen
