@@ -60,6 +60,34 @@ class _Cache:
         self._db.commit()
 
 
+def _or_sort_key(card: Card, sort: str) -> tuple:
+    name = (card.name or "").lower()
+    if sort == "name":
+        return (name,)
+    if sort == "power":
+        return (card.power or 0, name)
+    if sort == "life":
+        return (card.life or 0, name)
+    if sort == "level":
+        return (card.level or 0, name)
+    if sort == "durability":
+        return (card.durability or 0, name)
+    if sort in ("cost_memory", "cost_reserve"):
+        try:
+            v = int((card.cost and card.cost.value) or 0)
+        except (ValueError, TypeError):
+            v = 0
+        return (v, name)
+    if sort == "rarity":
+        eds = card.result_editions or card.editions
+        try:
+            r = int(eds[0].rarity) if eds and eds[0].rarity else 0
+        except (ValueError, TypeError):
+            r = 0
+        return (r, name)
+    return (name,)
+
+
 class GAClient:
     def __init__(self) -> None:
         self._http = httpx.AsyncClient(
@@ -188,6 +216,11 @@ class GAClient:
                 if card.slug not in seen:
                     seen.add(card.slug)
                     merged.append(card)
+
+        merged.sort(
+            key=lambda c: _or_sort_key(c, parsed.sort),
+            reverse=(parsed.order.upper() == "DESC"),
+        )
 
         resp = SearchResponse(
             data=merged,
