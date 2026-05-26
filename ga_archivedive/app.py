@@ -12,7 +12,8 @@ class ArchiveDiveApp(App):
 
     BINDINGS = [
         Binding("ctrl+q", "quit", "Quit", key_display="ctrl+q"),
-        Binding("f1", "help", "Syntax help", priority=True, key_display="F1", show=False),
+        Binding("f1", "help", "Syntax help", priority=True,
+                key_display="F1", show=False),
         Binding("?", "help", "Syntax help", priority=True, show=False),
     ]
 

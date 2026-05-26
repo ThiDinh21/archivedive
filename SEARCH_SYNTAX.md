@@ -116,6 +116,11 @@ OR binds more loosely than adjacent filters:
 
     t:ally e:fire OR t:champion     (ally AND fire) OR (champion)
 
+Use parentheses to make grouping explicit or to AND with an OR group:
+
+    (t:ally e:fire) or (t:champion e:water)   explicit grouping
+    (t:ally or t:champion) e:fire             fire ally or fire champion
+
 ---
 
 ## Combining filters

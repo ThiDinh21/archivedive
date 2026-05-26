@@ -94,7 +94,7 @@ def set_known_types(types: set[str]) -> None:
 
 # Fields handled client-side (API params broken or unsupported)
 _CLIENT_SIDE = {"oracle", "keyword", "power", "life", "durability", "level",
-                "cost_memory", "cost_reserve", "cost"}
+                "cost_memory", "cost_reserve", "cost", "subtype", "class", "type"}
 
 # ── Data structures ────────────────────────────────────────────────────────────
 
@@ -148,10 +148,12 @@ class ParsedQuery:
 # ── Tokeniser ──────────────────────────────────────────────────────────────────
 
 _TOKEN_RE = re.compile(
-    r'-?[a-zA-Z]+(?:>=|<=|>|<|=|:)"[^"]*"'  # key:"quoted value"
-    r'|-?[a-zA-Z]+(?:>=|<=|>|<|=|:)\S+'       # key:value
-    r'|"[^"]*"'                                 # bare "quoted string"
-    r'|\S+'                                     # plain word
+    r'\('                                          # open paren
+    r'|\)'                                         # close paren
+    r'|-?[a-zA-Z]+(?:>=|<=|>|<|=|:)"[^"]*"'      # key:"quoted value"
+    r'|-?[a-zA-Z]+(?:>=|<=|>|<|=|:)[^\s()]+'     # key:value
+    r'|"[^"]*"'                                    # bare "quoted string"
+    r'|[^\s()]+'                                  # plain word
 )
 _FILTER_RE = re.compile(
     r'^(-?)'
@@ -195,24 +197,68 @@ def parse(text: str) -> ParsedQuery:
                 continue
         remaining.append(tok)
 
-    # Split remaining on OR
-    groups_raw: list[list[str]] = [[]]
-    for tok in remaining:
-        if tok.upper() == "OR":
-            groups_raw.append([])
-        else:
-            groups_raw[-1].append(tok)
-
-    for raw_group in groups_raw:
-        group, name_parts = _parse_group(raw_group)
-        if name_parts:
-            group.append(Filter(key="name", value=" ".join(name_parts)))
-        if group:
-            q.groups.append(group)
-
-    if not q.groups:
-        q.groups = [[]]
+    q.groups = [g for g in _parse_dnf(remaining) if g] or [[]]
     return q
+
+
+
+def _split_on_top_or(tokens: list[str]) -> list[list[str]]:
+    """Split tokens on OR at depth 0, respecting parentheses."""
+    groups: list[list[str]] = [[]]
+    depth = 0
+    for tok in tokens:
+        if tok == "(":
+            depth += 1
+            groups[-1].append(tok)
+        elif tok == ")":
+            depth -= 1
+            groups[-1].append(tok)
+        elif tok.upper() == "OR" and depth == 0:
+            groups.append([])
+        else:
+            groups[-1].append(tok)
+    return groups
+
+
+def _parse_dnf(tokens: list[str]) -> list[list[Filter]]:
+    """Parse tokens into DNF: a list of OR groups, each group AND-combined."""
+    result: list[list[Filter]] = []
+    for part in _split_on_top_or(tokens):
+        if part:
+            result.extend(_parse_and_product(part))
+    return result or [[]]
+
+
+def _parse_and_product(tokens: list[str]) -> list[list[Filter]]:
+    """AND-combine tokens, distributing over any parenthesised sub-expressions."""
+    result: list[list[Filter]] = [[]]
+    i = 0
+    while i < len(tokens):
+        tok = tokens[i]
+        if tok == "(":
+            depth, j = 1, i + 1
+            while j < len(tokens) and depth > 0:
+                if tokens[j] == "(":
+                    depth += 1
+                elif tokens[j] == ")":
+                    depth -= 1
+                j += 1
+            sub_groups = _parse_dnf(tokens[i + 1:j - 1])
+            result = [r + s for r in result for s in sub_groups]
+            i = j
+        elif tok == ")":
+            i += 1  # unmatched close paren — skip
+        else:
+            j = i
+            while j < len(tokens) and tokens[j] not in ("(", ")"):
+                j += 1
+            filters, name_parts = _parse_group(tokens[i:j])
+            if name_parts:
+                filters = filters + [Filter(key="name", value=" ".join(name_parts))]
+            if filters:
+                result = [r + filters for r in result]
+            i = j
+    return result
 
 
 def _parse_group(tokens: list[str]) -> tuple[list[Filter], list[str]]:
@@ -252,6 +298,8 @@ def to_api_params(filters: list[Filter]) -> dict[str, Any]:
     """
     params: dict[str, Any] = {}
 
+    _hint_sent: set[str] = set()
+
     for f in filters:
         v = f.value
 
@@ -259,6 +307,19 @@ def to_api_params(filters: list[Filter]) -> dict[str, Any]:
         if f.key in ("keyword", "oracle") and not f.negated:
             if "effect" not in params:
                 params["effect"] = v
+            continue
+
+        # type/subtype/class: send first occurrence as API narrowing hint;
+        # all occurrences are also applied client-side (AND correctness)
+        if f.key in ("type", "subtype", "class") and not f.negated and f.op == "=":
+            upper = v.upper()
+            if f.key == "type":
+                api_key = "type" if upper in _KNOWN_TYPES else "subtype"
+            else:
+                api_key = f.key
+            if api_key not in _hint_sent:
+                _append(params, api_key, upper)
+                _hint_sent.add(api_key)
             continue
 
         if f.is_client_side:
@@ -269,17 +330,6 @@ def to_api_params(filters: list[Filter]) -> dict[str, Any]:
 
         elif f.key == "effect":
             params["effect"] = v
-
-        elif f.key == "type":
-            upper = v.upper()
-            api_key = "type" if upper in _KNOWN_TYPES else "subtype"
-            _append(params, api_key, upper)
-
-        elif f.key == "subtype":
-            _append(params, "subtype", v.upper())
-
-        elif f.key == "class":
-            _append(params, "class", v.upper())
 
         elif f.key == "element":
             elem = ELEMENT_ALIASES.get(v.lower(), v.upper())
