@@ -76,7 +76,7 @@ Without quotes, spaces end the value and the rest is parsed as new tokens.
     o:"on enter"              effect contains the phrase "on enter"
     o:"banish from memory"    exact phrase in effect text
     name:"silvie"             works but unnecessary for single words
-    ill:"studio atma"         illustrator with a space in the name
+    ill:dragonart             illustrator name
 
 ---
 

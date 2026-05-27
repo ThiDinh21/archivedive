@@ -6,6 +6,7 @@ from textual.containers import VerticalScroll
 from textual.screen import ModalScreen
 from textual.widgets import Static
 
+
 def _row(example: str, desc: str, width: int = 26) -> str:
     """Build a padded two-column row, accounting for visible chars only."""
     visible = example.replace("[cyan]", "").replace("[/cyan]", "")
@@ -19,7 +20,8 @@ _E = "[/cyan]"
 _CONTENT = (
     f"[bold yellow]Search Syntax Reference[/bold yellow]\n"
     f"\n"
-    f"[dim]key:value filters combined with AND (element uses or). F1 or esc to close.[/dim]\n"
+    f"[dim]key:value filters combined with `and` (element uses `or`)[/dim]\n"
+    f"[dim]F1 or esc to close[/dim]\n"
     f"[dim]ctrl+c copies search bar text · ctrl+q to quit[/dim]\n"
     f"\n"
     f"[bold]── Text ─────────────────────────────────[/bold]\n"
@@ -30,14 +32,15 @@ _CONTENT = (
         _row(f"{_C}kw:stealth{_E}",          "keyword ability (exact)"),
         _row(f"{_C}rule:graveyard{_E}",      "rule text"),
         _row(f"{_C}flavor:courage{_E}",      "flavor text"),
-        _row(f"{_C}ill:dragonart{_E}",        "illustrator"),
+        _row(f"{_C}ill:\"primea studio\"{_E}", "illustrator"),
     ]) + "\n"
     f"\n"
     f"[bold]── Card attributes ──────────────────────[/bold]\n"
     + "\n".join([
         _row(f"{_C}t:ally{_E}  {_C}t:human{_E}",    "type or subtype"),
         _row(f"{_C}class:mage{_E}  {_C}cl:mage{_E}",  "class"),
-        _row(f"{_C}e:fire{_E}  {_C}e:wa{_E}",        "element  (aliases: fi wa wi cr no)"),
+        _row(f"{_C}e:fire{_E}  {_C}e:wa{_E}",
+             "element  (aliases: fi wa wi cr no)"),
         _row(f"{_C}r:rare{_E}  {_C}r:csr{_E}",       "rarity"),
         _row(f"{_C}set:DOA{_E}",                      "set prefix code"),
         _row(f"{_C}speed:fast{_E}",                   "speed"),

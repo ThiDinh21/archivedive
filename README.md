@@ -24,30 +24,30 @@ archivedive
 
 ### Key bindings
 
-| Key        | Action                      |
-| ---------- | --------------------------- |
-| `s`        | Focus search bar            |
-| `F1` / `?` | Search syntax help          |
-| `c`        | Copy card text to clipboard |
-| `o`        | Open card image in browser  |
-| `ctrl+o`   | Select art edition          |
-| `r`        | Show related cards          |
-| `ctrl+<`   | Previous page               |
-| `ctrl+>`   | Next page                   |
-| `ctrl+c`   | Copy search bar text        |
-| `ctrl+q`   | Quit                        |
+| Key      | Action                      |
+| -------- | --------------------------- |
+| `s`      | Focus search bar            |
+| `F1`     | Search syntax help          |
+| `c`      | Copy card text to clipboard |
+| `o`      | Open card image in browser  |
+| `ctrl+o` | Select art edition          |
+| `r`      | Show related cards          |
+| `ctrl+<` | Previous page               |
+| `ctrl+>` | Next page                   |
+| `ctrl+c` | Copy search bar text        |
+| `ctrl+q` | Quit                        |
 
 Clipboard copy requires `xclip` or `xsel` on Linux.
 
 ## Search syntax
 
-Filters use `key:value` format and combine with AND. Element filters use OR.
+Filters use `key:value` format and combine with `and`. Element filters use `or`.
 
 ```
 silvie                          search by name
 t:ally e:fire cost:2            fire ally costing 2
 class:mage o:banish -r:common   mage with banish, not common
-e:fire OR e:water               fire or water element
+e:fire or e:water               fire or water element
 t:champion legal:standard       standard-legal champions
 sort:rarity order:desc          sort by rarity descending
 ```
