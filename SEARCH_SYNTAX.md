@@ -23,7 +23,7 @@ Filters use the format `key:value`. Multiple filters are combined with AND.
 | `flavor:` |                           | Flavor text                     | `flavor:silvie`    |
 | `ill:`    | `illustrator:`            | Illustrator name (fuzzy)        | `ill:akira`        |
 | `t:`      | `type:` `sub:` `subtype:` | Type or subtype (searches both) | `t:ally` `t:human` |
-| `class:`  |                           | Class                           | `class:mage`       |
+| `class:`  | `cl:`                     | Class                           | `class:mage`       |
 | `e:`      | `element:`                | Element (see below)             | `e:fire`           |
 | `r:`      | `rarity:`                 | Rarity (see below)              | `r:rare`           |
 | `set:`    | `s:`                      | Set prefix code                 | `set:DOA`          |

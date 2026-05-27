@@ -58,7 +58,7 @@ _KEY_MAP: dict[str, str] = {
     "oc": "oracle", "oracle": "oracle",
     "kw": "keyword", "keyword": "keyword",
     "t": "type", "type": "type", "sub": "subtype", "subtype": "subtype",
-    "class": "class",
+    "class": "class", "cl": "class",
     "e": "element", "element": "element",
     "r": "rarity", "rarity": "rarity",
     "set": "prefix", "s": "prefix",
