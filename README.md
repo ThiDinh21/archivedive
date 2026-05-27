@@ -37,7 +37,7 @@ archivedive
 | `ctrl+c` | Copy search bar text        |
 | `ctrl+q` | Quit                        |
 
-Clipboard copy requires `xclip` or `xsel` on Linux.
+Clipboard copy requires `wl-clipboard` (Wayland), `xclip`, or `xsel` on Linux.
 
 ## Search syntax
 

@@ -26,7 +26,11 @@ class _SearchInput(Input):
 
     def action_copy_value(self) -> None:
         import subprocess
-        for cmd in (["xclip", "-selection", "clipboard"], ["xsel", "--clipboard", "--input"]):
+        for cmd in (
+            ["wl-copy"],
+            ["xclip", "-selection", "clipboard"],
+            ["xsel", "--clipboard", "--input"],
+        ):
             try:
                 subprocess.run(cmd, input=self.value.encode(),
                                check=True, capture_output=True)
@@ -35,7 +39,7 @@ class _SearchInput(Input):
             except (FileNotFoundError, subprocess.CalledProcessError):
                 continue
         self.app.notify(
-            "No clipboard tool found (install xclip or xsel)", timeout=3)
+            "No clipboard tool found (install wl-clipboard, xclip, or xsel)", timeout=3)
 
 
 class SearchScreen(Screen):

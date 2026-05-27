@@ -185,13 +185,17 @@ def _plain_text(card: Card) -> str:
 
 def _copy_to_clipboard(text: str) -> None:
     import subprocess
-    for cmd in (["xclip", "-selection", "clipboard"], ["xsel", "--clipboard", "--input"]):
+    for cmd in (
+        ["wl-copy"],
+        ["xclip", "-selection", "clipboard"],
+        ["xsel", "--clipboard", "--input"],
+    ):
         try:
             subprocess.run(cmd, input=text.encode(), check=True, capture_output=True)
             return
         except (FileNotFoundError, subprocess.CalledProcessError):
             continue
-    raise RuntimeError("No clipboard tool found (install xclip or xsel)")
+    raise RuntimeError("No clipboard tool found (install wl-clipboard, xclip, or xsel)")
 
 
 class CardPanel(VerticalScroll):
