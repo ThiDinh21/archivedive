@@ -96,6 +96,9 @@ def set_known_types(types: set[str]) -> None:
 _CLIENT_SIDE = {"oracle", "keyword", "power", "life", "durability", "level",
                 "cost_memory", "cost_reserve", "cost", "subtype", "class", "type"}
 
+# Keys that accept numeric comparison operators
+_NUMERIC_KEYS = frozenset({"power", "life", "durability", "level", "cost_memory", "cost_reserve", "cost"})
+
 # ── Data structures ────────────────────────────────────────────────────────────
 
 @dataclass
@@ -143,6 +146,7 @@ class ParsedQuery:
     groups: list[list[Filter]] = field(default_factory=lambda: [[]])
     sort: str = "name"
     order: str = "ASC"
+    warnings: list[str] = field(default_factory=list)
 
 
 # ── Tokeniser ──────────────────────────────────────────────────────────────────
@@ -181,6 +185,7 @@ def parse(text: str) -> ParsedQuery:
         return ParsedQuery(groups=[[]])
 
     q = ParsedQuery(groups=[])
+    warnings: list[str] = []
 
     # Extract sort/order modifiers first, leaving the rest for filter parsing
     remaining: list[str] = []
@@ -197,7 +202,8 @@ def parse(text: str) -> ParsedQuery:
                 continue
         remaining.append(tok)
 
-    q.groups = [g for g in _parse_dnf(remaining) if g] or [[]]
+    q.groups = [g for g in _parse_dnf(remaining, warnings) if g] or [[]]
+    q.warnings = warnings
     return q
 
 
@@ -220,16 +226,16 @@ def _split_on_top_or(tokens: list[str]) -> list[list[str]]:
     return groups
 
 
-def _parse_dnf(tokens: list[str]) -> list[list[Filter]]:
+def _parse_dnf(tokens: list[str], warnings: list[str]) -> list[list[Filter]]:
     """Parse tokens into DNF: a list of OR groups, each group AND-combined."""
     result: list[list[Filter]] = []
     for part in _split_on_top_or(tokens):
         if part:
-            result.extend(_parse_and_product(part))
+            result.extend(_parse_and_product(part, warnings))
     return result or [[]]
 
 
-def _parse_and_product(tokens: list[str]) -> list[list[Filter]]:
+def _parse_and_product(tokens: list[str], warnings: list[str]) -> list[list[Filter]]:
     """AND-combine tokens, distributing over any parenthesised sub-expressions."""
     result: list[list[Filter]] = [[]]
     i = 0
@@ -243,7 +249,7 @@ def _parse_and_product(tokens: list[str]) -> list[list[Filter]]:
                 elif tokens[j] == ")":
                     depth -= 1
                 j += 1
-            sub_groups = _parse_dnf(tokens[i + 1:j - 1])
+            sub_groups = _parse_dnf(tokens[i + 1:j - 1], warnings)
             result = [r + s for r in result for s in sub_groups]
             i = j
         elif tok == ")":
@@ -252,7 +258,7 @@ def _parse_and_product(tokens: list[str]) -> list[list[Filter]]:
             j = i
             while j < len(tokens) and tokens[j] not in ("(", ")"):
                 j += 1
-            filters, name_parts = _parse_group(tokens[i:j])
+            filters, name_parts = _parse_group(tokens[i:j], warnings)
             if name_parts:
                 filters = filters + [Filter(key="name", value=" ".join(name_parts))]
             if filters:
@@ -261,7 +267,7 @@ def _parse_and_product(tokens: list[str]) -> list[list[Filter]]:
     return result
 
 
-def _parse_group(tokens: list[str]) -> tuple[list[Filter], list[str]]:
+def _parse_group(tokens: list[str], warnings: list[str]) -> tuple[list[Filter], list[str]]:
     filters: list[Filter] = []
     name_parts: list[str] = []
     for tok in tokens:
@@ -269,9 +275,19 @@ def _parse_group(tokens: list[str]) -> tuple[list[Filter], list[str]]:
         if m:
             negated = m.group(1) == "-"
             raw_key = m.group(2).lower()
-            op = m.group(3).replace(":", "=")
+            op_raw = m.group(3)
+            op = op_raw.replace(":", "=")
             value = _strip_quotes(m.group(4))
-            if raw_key in _KEY_MAP:
+            if raw_key not in _KEY_MAP:
+                warnings.append(
+                    f'"{tok}" ignored — unknown filter key "{raw_key}:"'
+                )
+            elif op in (">", "<", ">=", "<=") and _KEY_MAP[raw_key] not in _NUMERIC_KEYS:
+                key = _KEY_MAP[raw_key]
+                warnings.append(
+                    f'"{tok}" ignored — operator "{op_raw}" not valid for "{raw_key}:"'
+                )
+            else:
                 key = _KEY_MAP[raw_key]
                 if key == "flag":
                     expanded = FLAGS.get(value.lower())
@@ -281,8 +297,6 @@ def _parse_group(tokens: list[str]) -> tuple[list[Filter], list[str]]:
                             filters.extend(sub_group)
                 else:
                     filters.append(Filter(key=key, value=value, op=op, negated=negated))
-            else:
-                name_parts.append(_strip_quotes(tok))
         else:
             name_parts.append(_strip_quotes(tok))
     return filters, name_parts

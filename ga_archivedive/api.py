@@ -196,6 +196,11 @@ class GAClient:
         parsed = parse(query)
 
         if not parsed.groups or all(not g for g in parsed.groups):
+            if parsed.warnings:
+                return SearchResponse(
+                    data=[], total_cards=0, total_pages=1, has_more=False,
+                    paginated_cards_count=0, page=page, page_size=page_size,
+                )
             return await self.search(page=page, page_size=page_size)
 
         if len(parsed.groups) == 1:

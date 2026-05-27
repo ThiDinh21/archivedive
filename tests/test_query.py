@@ -705,3 +705,77 @@ class TestClientFilter:
         result = apply_client_filters([rare_fire, common_fire], filters)
         assert rare_fire in result
         assert common_fire not in result
+
+
+# ── Warnings ───────────────────────────────────────────────────────────────────
+
+class TestWarnings:
+    def test_no_warnings_for_valid_query(self):
+        q = parse("t:ally e:fire")
+        assert q.warnings == []
+
+    def test_unknown_key_produces_warning(self):
+        q = parse("wrongkey:creature")
+        assert len(q.warnings) == 1
+        assert "wrongkey:" in q.warnings[0]
+        assert "unknown filter key" in q.warnings[0]
+
+    def test_unknown_key_not_added_to_name(self):
+        q = parse("wrongkey:creature")
+        # should not produce a name filter
+        keys = [f.key for g in q.groups for f in g]
+        assert "name" not in keys
+
+    def test_valid_filter_after_unknown_key_still_parsed(self):
+        q = parse("wrongkey:creature e:fire")
+        assert len(q.warnings) == 1
+        keys = [f.key for g in q.groups for f in g]
+        assert "element" in keys
+
+    def test_numeric_op_on_non_numeric_key_warns(self):
+        q = parse("e>fire")
+        assert len(q.warnings) == 1
+        assert "not valid" in q.warnings[0]
+        assert "e:" in q.warnings[0]
+
+    def test_numeric_op_on_numeric_key_no_warning(self):
+        q = parse("pow>=3")
+        assert q.warnings == []
+        assert q.groups[0][0].key == "power"
+        assert q.groups[0][0].op == ">="
+
+    def test_multiple_unknown_keys_each_warn(self):
+        q = parse("foo:a bar:b")
+        assert len(q.warnings) == 2
+
+    def test_all_invalid_groups_produce_empty_groups(self):
+        # all tokens are unknown keys — groups should collapse to [[]]
+        q = parse("foo:a bar:b")
+        # The fallback is [[]] which contains one empty group
+        assert all(len(g) == 0 for g in q.groups)
+
+    def test_unknown_key_in_or_group(self):
+        q = parse("t:ally OR wrongkey:foo")
+        # ally group should be present; warnings for wrongkey
+        assert any(any(f.key == "type" for f in g) for g in q.groups)
+        assert len(q.warnings) == 1
+
+    def test_plain_text_no_warning(self):
+        q = parse("silvie dungeon")
+        assert q.warnings == []
+        keys = [f.key for g in q.groups for f in g]
+        assert "name" in keys
+
+    def test_negated_unknown_key_warns(self):
+        q = parse("-wrongkey:foo")
+        assert len(q.warnings) == 1
+        assert "wrongkey:" in q.warnings[0]
+
+    def test_valid_and_invalid_mixed_in_parens(self):
+        q = parse("(t:ally OR wrongkey:foo) e:fire")
+        assert len(q.warnings) == 1
+        # fire element should be distributed into the valid group
+        assert any(
+            any(f.key == "element" for f in g)
+            for g in q.groups
+        )

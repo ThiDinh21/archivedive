@@ -60,6 +60,12 @@ class SearchScreen(Screen):
     #search-input {
         margin: 1 2;
     }
+    #warning {
+        margin: 0 2;
+        height: 1;
+        color: $warning;
+        display: none;
+    }
     #main-content {
         height: 1fr;
     }
@@ -88,6 +94,7 @@ class SearchScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Header()
         yield _SearchInput(placeholder="Search cards… (name, effect, type)", id="search-input")
+        yield Label("", id="warning")
         with Horizontal(id="main-content"):
             yield CardTable(id="card-table")
             yield CardPanel(id="card-panel")
@@ -165,19 +172,28 @@ class SearchScreen(Screen):
         try:
             query = self._last_query.strip()
             client = self.app.client  # type: ignore[attr-defined]
+            warning_label = self.query_one("#warning", Label)
 
             if not query:
+                warning_label.display = False
                 cards = await client.random(count=50)
                 table.populate(cards)
                 self._set_status(len(cards), 1, 1)
                 return
 
+            from ..query import parse
+            parsed = parse(query)
+
+            if parsed.warnings:
+                warning_label.update("  |  ".join(parsed.warnings))
+                warning_label.display = True
+            else:
+                warning_label.display = False
+
             result: SearchResponse = await client.search_query(query, page=self._page)
             table.populate(result.data)
             self._total_pages = result.total_pages
             self._total_cards = result.total_cards
-            from ..query import parse
-            parsed = parse(query)
             total = result.total_cards if result.data else 0
             pages = result.total_pages if result.data else 1
             self._set_status(total, self._page, pages,
