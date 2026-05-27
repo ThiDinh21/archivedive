@@ -11,7 +11,7 @@ Plain text searches by card name (fuzzy match).
 
 ## Keyword filters
 
-Filters use the format `key:value`. Multiple filters are combined with AND.
+Filters use the format `key:value`. Multiple filters are combined with `and`.
 
 | Key       | Aliases                   | Description                     | Example            |
 | --------- | ------------------------- | ------------------------------- | ------------------ |
@@ -21,7 +21,7 @@ Filters use the format `key:value`. Multiple filters are combined with AND.
 | `kw:`     | `keyword:`                | Keyword ability (exact match)   | `kw:stealth`       |
 | `rule:`   |                           | Rule text (title or body)       | `rule:graveyard`   |
 | `flavor:` |                           | Flavor text                     | `flavor:silvie`    |
-| `ill:`    | `illustrator:`            | Illustrator name (fuzzy)        | `ill:akira`        |
+| `ill:`    | `illustrator:`            | Illustrator name (fuzzy)        | `ill:dragonart`    |
 | `t:`      | `type:` `sub:` `subtype:` | Type or subtype (searches both) | `t:ally` `t:human` |
 | `class:`  | `cl:`                     | Class                           | `class:mage`       |
 | `e:`      | `element:`                | Element (see below)             | `e:fire`           |
@@ -45,8 +45,8 @@ Filters use the format `key:value`. Multiple filters are combined with AND.
 
 | Flag           | Description                  | Expands to                                                                                                   |
 | -------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `is:material`  | Material deck cards          | `t:champion OR t:regalia`                                                                                    |
-| `is:permanent` | Cards that stay on the field | `t:ally OR t:champion OR t:item OR t:weapon OR t:token OR t:status OR t:regalia OR t:phantasia OR t:mastery` |
+| `is:material`  | Material deck cards          | `t:champion or t:regalia`                                                                                    |
+| `is:permanent` | Cards that stay on the field | `t:ally or t:champion or t:item or t:weapon or t:token or t:status or t:regalia or t:phantasia or t:mastery` |
 
 ---
 
@@ -104,19 +104,19 @@ counts may differ slightly as results are filtered after fetching.
 
 ## OR logic
 
-Use `OR` or `or` between filters. Handled client-side via two API calls
+Use `or` or `OR` between filters. Handled client-side via two API calls
 merged and deduplicated.
 
-    e:fire OR e:water           fire or water
+    e:fire or e:water           fire or water
     e:fire or e:water           same thing
-    t:ally OR t:champion        ally or champion
+    t:ally or t:champion        ally or champion
     o:banish or o:memory        effect mentions banish or memory
 
-OR binds more loosely than adjacent filters:
+`or` binds more loosely than adjacent filters:
 
-    t:ally e:fire OR t:champion     (ally AND fire) OR (champion)
+    t:ally e:fire or t:champion     (ally AND fire) or (champion)
 
-Use parentheses to make grouping explicit or to AND with an OR group:
+Use parentheses to make explicit grouping:
 
     (t:ally e:fire) or (t:champion e:water)   explicit grouping
     (t:ally or t:champion) e:fire             fire ally or fire champion
@@ -128,7 +128,7 @@ Use parentheses to make grouping explicit or to AND with an OR group:
     t:ally e:fire cost:2            fire ally costing 2 (memory or reserve)
     t:human class:mage o:banish     human mage with banish in effect
     t:champion -e:norm              champion with any element
-    e:fire OR e:water -r:common     fire or water, excluding commons
+    e:fire or e:water -r:common     fire or water, excluding commons
     set:DOA legal:standard          Dawn of Ashes cards legal in standard
 
 ---
@@ -190,12 +190,12 @@ to cards where the keyword appears as a standalone ability.
     legal:pantheon t:champion
     is:material e:fire
     is:permanent -t:champion
-    e:fire OR e:water -r:common -r:uncommon
+    e:fire or e:water -r:common -r:uncommon
     o:"on enter" t:ally class:mage
     oc:"banish from memory"
     kw:stealth t:ally
-    kw:taunt OR kw:intercept
+    kw:taunt or kw:intercept
     rule:graveyard
     flavor:"courage"
-    ill:"studio atma" r:csr
+    ill:dragonart r:csr
     is:material legal:s -r:common
