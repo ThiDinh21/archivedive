@@ -27,6 +27,16 @@ archivedive = "ga_archivedive.app:main"
 [tool.hatch.build.targets.wheel]
 packages = ["ga_archivedive"]
 
+[tool.hatch.build.targets.sdist]
+exclude = [
+    "assets/",
+    "tests/",
+    ".claude/",
+    "uv.lock",
+    ".gitignore",
+    ".python-version",
+]
+
 [dependency-groups]
 dev = ["pytest>=8.0", "pytest-asyncio>=0.23"]
 
