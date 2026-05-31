@@ -6,14 +6,16 @@ A terminal card browser for [Grand Archive TCG](https://www.gatcg.com/), inspire
 
 ## Install
 
-```
-pip install archivedive
-```
-
-or with uv (no install needed):
+Recommended — run instantly with [uv](https://docs.astral.sh/uv/getting-started/installation/) (no install needed):
 
 ```
 uvx archivedive
+```
+
+or with pip:
+
+```
+pip install archivedive
 ```
 
 ## Usage
@@ -52,4 +54,4 @@ t:champion legal:standard       standard-legal champions
 sort:rarity order:desc          sort by rarity descending
 ```
 
-See [SEARCH_SYNTAX.md](SEARCH_SYNTAX.md) for the full reference.
+See [SEARCH_SYNTAX.md](https://github.com/ThiDinh21/archivedive/blob/master/SEARCH_SYNTAX.md) for the full reference.

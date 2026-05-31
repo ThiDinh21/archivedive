@@ -17,6 +17,10 @@ dependencies = [
     "platformdirs>=4.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/ThiDinh21/archivedive"
+Repository = "https://github.com/ThiDinh21/archivedive"
+
 [project.scripts]
 archivedive = "ga_archivedive.app:main"
 
