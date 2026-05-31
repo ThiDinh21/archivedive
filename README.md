@@ -4,6 +4,10 @@ A terminal card browser for [Grand Archive TCG](https://www.gatcg.com/), inspire
 
 ![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue)
 
+![ArchiveDive UI](https://raw.githubusercontent.com/ThiDinh21/archivedive/master/assets/img1.png)
+
+![Search syntax help](https://raw.githubusercontent.com/ThiDinh21/archivedive/master/assets/img2.png)
+
 ## Install
 
 Recommended — run instantly with [uv](https://docs.astral.sh/uv/getting-started/installation/) (no install needed):
