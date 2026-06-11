@@ -32,8 +32,8 @@ class _SearchInput(Input):
             ["xsel", "--clipboard", "--input"],
         ):
             try:
-                subprocess.run(cmd, input=self.value.encode(),
-                               check=True, capture_output=True)
+                subprocess.run(cmd, input=self.value.encode(), check=True,
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 self.app.notify("Copied", timeout=2)
                 return
             except (FileNotFoundError, subprocess.CalledProcessError):

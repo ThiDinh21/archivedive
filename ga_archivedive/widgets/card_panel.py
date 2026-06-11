@@ -191,7 +191,8 @@ def _copy_to_clipboard(text: str) -> None:
         ["xsel", "--clipboard", "--input"],
     ):
         try:
-            subprocess.run(cmd, input=text.encode(), check=True, capture_output=True)
+            subprocess.run(cmd, input=text.encode(), check=True,
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             return
         except (FileNotFoundError, subprocess.CalledProcessError):
             continue
