@@ -80,7 +80,7 @@ Without quotes, spaces end the value and the rest is parsed as new tokens.
 
 ---
 
-## Operators (numeric fields only)
+## Operators (numeric and rarity fields)
 
 Supported: `=` (default), `>`, `<`, `>=`, `<=`
 
@@ -88,6 +88,8 @@ Supported: `=` (default), `>`, `<`, `>=`, `<=`
     pow<4       power less than 4
     life=5      exactly 5 life
     lvl<=2      level 2 or lower
+    r>c         rarity higher than common
+    r>=sr       super rare or higher
 
 ---
 

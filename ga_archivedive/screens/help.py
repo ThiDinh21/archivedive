@@ -41,7 +41,7 @@ _CONTENT = (
         _row(f"{_C}class:mage{_E}  {_C}cl:mage{_E}",  "class"),
         _row(f"{_C}e:fire{_E}  {_C}e:wa{_E}",
              "element  (aliases: fi wa wi cr no)"),
-        _row(f"{_C}r:rare{_E}  {_C}r:csr{_E}",       "rarity"),
+        _row(f"{_C}r:rare{_E}  {_C}r>=sr{_E}",       "rarity  (= > < >= <=)"),
         _row(f"{_C}set:DOA{_E}",                      "set prefix code"),
         _row(f"{_C}speed:fast{_E}",                   "speed"),
     ]) + "\n"

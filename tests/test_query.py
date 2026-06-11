@@ -537,6 +537,26 @@ class TestClientFilter:
         result = apply_client_filters([common, rare], [Filter("rarity", "common", negated=True)])
         assert result == [rare]
 
+    # rarity comparison operators
+    def test_rarity_greater_than(self):
+        common = _card(slug="cm", editions=[CardEdition(slug="e1", rarity="1")])
+        rare   = _card(slug="ra", editions=[CardEdition(slug="e2", rarity="3")])
+        result = apply_client_filters([common, rare], [Filter("rarity", "c", op=">")])
+        assert result == [rare]
+
+    def test_rarity_greater_equal(self):
+        rare = _card(slug="ra", editions=[CardEdition(slug="e1", rarity="4")])
+        sr   = _card(slug="sr", editions=[CardEdition(slug="e2", rarity="4")])
+        common = _card(slug="cm", editions=[CardEdition(slug="e3", rarity="1")])
+        result = apply_client_filters([rare, sr, common], [Filter("rarity", "sr", op=">=")])
+        assert result == [rare, sr]
+
+    def test_rarity_less_equal(self):
+        common = _card(slug="cm", editions=[CardEdition(slug="e1", rarity="1")])
+        ultra  = _card(slug="ur", editions=[CardEdition(slug="e2", rarity="5")])
+        result = apply_client_filters([common, ultra], [Filter("rarity", "u", op="<=")])
+        assert result == [common]
+
     # oracle
     def test_oracle_substring(self):
         card = _card(effect="banish from memory")

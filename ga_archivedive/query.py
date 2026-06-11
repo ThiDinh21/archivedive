@@ -97,7 +97,7 @@ _CLIENT_SIDE = {"oracle", "keyword", "power", "life", "durability", "level",
                 "cost_memory", "cost_reserve", "cost", "subtype", "class", "type"}
 
 # Keys that accept numeric comparison operators
-_NUMERIC_KEYS = frozenset({"power", "life", "durability", "level", "cost_memory", "cost_reserve", "cost"})
+_NUMERIC_KEYS = frozenset({"power", "life", "durability", "level", "cost_memory", "cost_reserve", "cost", "rarity"})
 
 # ── Data structures ────────────────────────────────────────────────────────────
 
@@ -450,7 +450,10 @@ def _check(card: Any, f: Filter) -> bool:
         if rarity_num is None:
             return False
         eds = c.result_editions or c.editions
-        return any(str(ed.rarity) == str(rarity_num) for ed in eds)
+        if op == "=":
+            return any(str(ed.rarity) == str(rarity_num) for ed in eds)
+        return any(ed.rarity is not None and _compare(int(ed.rarity), op, rarity_num)
+                   for ed in eds)
 
     if key == "speed":
         return (c.speed or "").lower() == val
