@@ -18,7 +18,7 @@ Filters use the format `key:value`. Multiple filters are combined with `and`.
 | `name:`   | (plain text)              | Card name                       | `silvie`           |
 | `o:`      | `effect:`                 | Effect text (any edition)       | `o:banish`         |
 | `oc:`     | `oracle:`                 | Effect text (canonical only)    | `oc:banish`        |
-| `kw:`     | `keyword:`                | Keyword ability (exact match)   | `kw:stealth`       |
+| `kw:`     | `keyword:`                | Keyword ability (partial match) | `kw:float`         |
 | `rule:`   |                           | Rule text (title or body)       | `rule:graveyard`   |
 | `flavor:` |                           | Flavor text                     | `flavor:silvie`    |
 | `ill:`    | `illustrator:`            | Illustrator name (fuzzy)        | `ill:dragonart`    |
@@ -173,9 +173,9 @@ Common keywords (59 total — see rules.gatcg.com/glossary/keywords-and-abilitie
     on death      on hit        on attack     on kill       floating memory
     vigor         ranged        empower       bulwark       immortality
 
-`kw:` matches only cards that have the keyword — not cards that merely mention
-it in their text. Handled client-side: fetches by effect text, then filters
-to cards where the keyword appears as a standalone ability.
+`kw:` matches only cards that have the keyword as a standalone bolded ability,
+not cards that merely mention it in normal effect text. The match is partial, so short
+forms work too, e.g. `kw:float` matches the **Floating Memory** keyword.
 
 ---
 

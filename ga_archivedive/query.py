@@ -423,7 +423,7 @@ def _check(card: Any, f: Filter) -> bool:
         return val in (c.effect or "").lower()
 
     if key == "keyword":
-        pattern = re.compile(r'\*\*' + re.escape(f.value) + r'\*\*', re.IGNORECASE)
+        pattern = re.compile(r'\*\*[^*]*' + re.escape(f.value) + r'[^*]*\*\*', re.IGNORECASE)
         return bool(pattern.search(c.effect or ""))
 
     if key == "name":

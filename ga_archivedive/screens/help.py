@@ -29,7 +29,7 @@ _CONTENT = (
         _row(f"{_C}silvie{_E}",              "name search (fuzzy)"),
         _row(f"{_C}o:banish{_E}",            "effect text (any edition)"),
         _row(f"{_C}oc:banish{_E}",           "effect text (canonical only)"),
-        _row(f"{_C}kw:stealth{_E}",          "keyword ability (exact)"),
+        _row(f"{_C}kw:stealth{_E}",          "keyword ability"),
         _row(f"{_C}rule:graveyard{_E}",      "rule text"),
         _row(f"{_C}flavor:courage{_E}",      "flavor text"),
         _row(f"{_C}ill:\"primea studio\"{_E}", "illustrator"),

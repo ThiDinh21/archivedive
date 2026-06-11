@@ -592,6 +592,15 @@ class TestClientFilter:
         card = _card(effect="**On Enter**: gain 1 memory.")
         assert apply_client_filters([card], [Filter("keyword", "On Enter")]) == [card]
 
+    def test_keyword_partial_matches_full_name(self):
+        # "float" is shorthand for the "Floating Memory" keyword
+        card = _card(effect="**Floating Memory** — return this to your hand.")
+        assert apply_client_filters([card], [Filter("keyword", "float")]) == [card]
+
+    def test_keyword_partial_plain_text_no_match(self):
+        card = _card(effect="This card can float around.")
+        assert apply_client_filters([card], [Filter("keyword", "float")]) == []
+
     # rarity — valid values are server-side; test _check directly
     def test_rarity_common(self):
         card = _card(editions=[CardEdition(slug="e", rarity="1")])
