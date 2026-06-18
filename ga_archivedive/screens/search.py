@@ -35,7 +35,8 @@ class _CardSuggester(Suggester):
 
 class _SearchInput(Input):
     BINDINGS = [
-        Binding("ctrl+c", "copy_value", "Copy", show=False),
+        Binding("ctrl+c", "copy_value", "Copy", key_display="ctrl+c"),
+        Binding("ctrl+shift+v", "paste", "Paste", key_display="ctrl+shift+v", show=True),
         Binding("tab", "accept_suggestion", "Accept suggestion", show=False),
     ]
 
