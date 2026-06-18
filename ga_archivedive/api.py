@@ -181,7 +181,7 @@ class GAClient:
         return names
 
     async def random(self, count: int = 8) -> list[Card]:
-        response = await self._http.get("/cards/random", params={"count": count})
+        response = await self._http.get("/cards/random", params={"amount": count})
         response.raise_for_status()
         data = response.json()
         cards = data.get("data", data) if isinstance(data, dict) else data
