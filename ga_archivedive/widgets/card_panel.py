@@ -13,6 +13,7 @@ from textual.widgets import Static
 
 from ..models import Card
 from ..api import BASE_URL
+from .. import copy_to_clipboard
 
 _PLACEHOLDER = "[dim]Select a card to see details[/dim]"
 
@@ -183,22 +184,6 @@ def _plain_text(card: Card) -> str:
     return "\n".join(lines)
 
 
-def _copy_to_clipboard(text: str) -> None:
-    import subprocess
-    for cmd in (
-        ["wl-copy"],
-        ["xclip", "-selection", "clipboard"],
-        ["xsel", "--clipboard", "--input"],
-    ):
-        try:
-            subprocess.run(cmd, input=text.encode(), check=True,
-                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            return
-        except (FileNotFoundError, subprocess.CalledProcessError):
-            continue
-    raise RuntimeError("No clipboard tool found (install wl-clipboard, xclip, or xsel)")
-
-
 class CardPanel(VerticalScroll):
 
     can_focus = True
@@ -240,7 +225,7 @@ class CardPanel(VerticalScroll):
         if self._current_card is None:
             return
         try:
-            _copy_to_clipboard(_plain_text(self._current_card))
+            copy_to_clipboard(_plain_text(self._current_card))
             self.app.notify(f"Copied: {self._current_card.name}", timeout=2)
         except RuntimeError as e:
             self.app.notify(str(e), severity="error", timeout=4)

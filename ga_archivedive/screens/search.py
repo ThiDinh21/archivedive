@@ -25,21 +25,12 @@ class _SearchInput(Input):
         self.cursor_position = len(self.value)
 
     def action_copy_value(self) -> None:
-        import subprocess
-        for cmd in (
-            ["wl-copy"],
-            ["xclip", "-selection", "clipboard"],
-            ["xsel", "--clipboard", "--input"],
-        ):
-            try:
-                subprocess.run(cmd, input=self.value.encode(), check=True,
-                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                self.app.notify("Copied", timeout=2)
-                return
-            except (FileNotFoundError, subprocess.CalledProcessError):
-                continue
-        self.app.notify(
-            "No clipboard tool found (install wl-clipboard, xclip, or xsel)", timeout=3)
+        from .. import copy_to_clipboard
+        try:
+            copy_to_clipboard(self.value)
+            self.app.notify("Copied", timeout=2)
+        except RuntimeError as e:
+            self.app.notify(str(e), timeout=3)
 
 
 class SearchScreen(Screen):
