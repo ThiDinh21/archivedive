@@ -196,7 +196,8 @@ class SearchScreen(Screen):
         table = self.query_one(CardTable)
         table.clear()
         table.loading = True
-        self.query_one("#status", Label).update("Loading…")
+        if self._page == 1:
+            self.query_one("#status", Label).update("Loading…")
         try:
             query = self._last_query.strip()
             client = self.app.client  # type: ignore[attr-defined]
