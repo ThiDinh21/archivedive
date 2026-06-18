@@ -191,7 +191,7 @@ class GAClient:
         self,
         query: str,
         page: int = 1,
-        page_size: int = 15,
+        page_size: int = 18,
     ) -> SearchResponse:
         from .query import parse, to_api_params, apply_client_filters
 
