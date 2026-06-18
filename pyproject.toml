@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "archivedive"
-version = "0.1.2"
+version = "0.2.0"
 description = "A Scryfall-like TUI card browser for Grand Archive TCG"
 readme = "README.md"
 license = { text = "MIT" }
