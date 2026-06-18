@@ -19,11 +19,11 @@ class CardTable(DataTable[str]):
 
     def on_mount(self) -> None:
         self.cursor_type = "row"
-        self.add_column("Name", width=32)
-        self.add_column("Type", width=22)
+        self.add_column("Name", width=28)
+        self.add_column("Type", width=24)
         self.add_column("Element", width=12)
-        self.add_column("Cost", width=6)
-        self.add_column("Rarity", width=10)
+        self.add_column("Cost", width=5)
+        self.add_column("Rarity", width=6)
 
     def populate(self, cards: list[Card]) -> None:
         self._cards = {card.slug: card for card in cards}
