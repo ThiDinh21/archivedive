@@ -26,7 +26,10 @@ class _CardSuggester(Suggester):
             return None
         try:
             names = await self._client.autocomplete_names(value.strip())
-            return names[0] if names else None
+            for name in names:
+                if name.casefold().startswith(value):
+                    return name
+            return None
         except Exception:
             return None
 

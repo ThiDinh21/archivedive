@@ -10,7 +10,7 @@ A terminal card browser for [Grand Archive TCG](https://www.gatcg.com/), inspire
 
 ## Install
 
-Recommended — run instantly with [uv](https://docs.astral.sh/uv/getting-started/installation/) (no install needed):
+Recommended, run instantly with [uv](https://docs.astral.sh/uv/getting-started/installation/) (no install needed):
 
 ```
 uvx archivedive
