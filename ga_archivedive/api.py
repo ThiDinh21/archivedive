@@ -206,34 +206,43 @@ class GAClient:
                 sort=parsed.sort, order=parsed.order,
             )
 
-        # OR: fetch each group and merge, deduplicated by slug
+        # OR: fetch all results from each group, merge, then paginate locally
         seen: set[str] = set()
         merged: list[Card] = []
         for group in parsed.groups:
-            result = await self._fetch_group(
-                group, page=1, page_size=page_size,
-                sort=parsed.sort, order=parsed.order,
-            )
-            for card in result.data:
-                if card.slug not in seen:
-                    seen.add(card.slug)
-                    merged.append(card)
+            api_page = 1
+            while True:
+                result = await self._fetch_group(
+                    group, page=api_page, page_size=50,
+                    sort=parsed.sort, order=parsed.order,
+                )
+                for card in result.data:
+                    if card.slug not in seen:
+                        seen.add(card.slug)
+                        merged.append(card)
+                if not result.has_more:
+                    break
+                api_page += 1
 
         merged.sort(
             key=lambda c: _or_sort_key(c, parsed.sort),
             reverse=(parsed.order.upper() == "DESC"),
         )
 
-        resp = SearchResponse(
-            data=merged,
-            total_cards=len(merged),
-            total_pages=1,
-            has_more=False,
-            paginated_cards_count=len(merged),
-            page=1,
+        total = len(merged)
+        total_pages = max(1, (total + page_size - 1) // page_size)
+        start = (page - 1) * page_size
+        page_data = merged[start:start + page_size]
+
+        return SearchResponse(
+            data=page_data,
+            total_cards=total,
+            total_pages=total_pages,
+            has_more=page < total_pages,
+            paginated_cards_count=len(page_data),
+            page=page,
             page_size=page_size,
         )
-        return resp
 
     async def _fetch_group(
         self,
