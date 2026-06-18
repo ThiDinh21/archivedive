@@ -13,11 +13,6 @@ class CardTable(DataTable[str]):
             self.card = card
             super().__init__()
 
-    class CardSelected(Message):
-        def __init__(self, card: Card) -> None:
-            self.card = card
-            super().__init__()
-
     def __init__(self, **kwargs: object) -> None:
         super().__init__(**kwargs)
         self._cards: dict[str, Card] = {}
@@ -51,11 +46,6 @@ class CardTable(DataTable[str]):
         card = self._card_for_key(event.row_key.value if event.row_key else None)
         if card:
             self.post_message(self.CardHighlighted(card))
-
-    def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
-        card = self._card_for_key(event.row_key.value if event.row_key else None)
-        if card:
-            self.post_message(self.CardSelected(card))
 
     def _card_for_key(self, key: str | None) -> Card | None:
         if key is None:

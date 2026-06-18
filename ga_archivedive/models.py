@@ -67,7 +67,6 @@ class CardEdition(BaseModel):
     illustrator: str | None = None
     image: str | None = None
     effect: str | None = None
-    effect_html: str | None = None
     flavor: str | None = None
     set: SetInfo | None = None
     legality: dict[str, Any] | None = None
@@ -96,8 +95,6 @@ class Card(BaseModel):
     speed: str | None = None
     cost: CardCost | None = None
     effect: str | None = None
-    effect_html: str | None = None
-    effect_raw: str | None = None
     flavor: str | None = None
     rule: str | None = None
     legality: dict[str, dict[str, Any]] | None = None
@@ -147,12 +144,6 @@ class Card(BaseModel):
     def display_elements(self) -> str:
         return " / ".join(self.elements) if self.elements else "-"
 
-    @property
-    def image_filename(self) -> str | None:
-        editions = self.result_editions or self.editions
-        if editions and editions[0].image:
-            return editions[0].image
-        return None
 
 
 class SearchResponse(BaseModel):

@@ -1,4 +1,3 @@
-import json
 import pytest
 import httpx
 from ga_archivedive.api import GAClient, BASE_URL, _Cache
@@ -54,14 +53,6 @@ def _make_client(responses: dict[str, object], tmp_path, monkeypatch) -> GAClien
     )
     client._cache = _Cache()
     return client
-
-
-# ── image_url ─────────────────────────────────────────────────────────────────
-
-class TestImageUrl:
-    def test_constructs_full_url(self, tmp_path, monkeypatch):
-        client = _make_client({}, tmp_path, monkeypatch)
-        assert client.image_url("abc.jpg") == f"{BASE_URL}/cards/images/abc.jpg"
 
 
 # ── search ────────────────────────────────────────────────────────────────────

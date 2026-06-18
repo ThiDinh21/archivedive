@@ -150,26 +150,6 @@ class TestDisplayElements:
         assert card.display_elements == "-"
 
 
-class TestImageFilename:
-    def test_from_result_editions(self):
-        card = Card.model_validate(_base_card(
-            result_editions=[{"slug": "ed-1", "image": "/cards/images/abc.jpg"}],
-            editions=[{"slug": "ed-2", "image": "/cards/images/xyz.jpg"}],
-        ))
-        assert card.image_filename == "/cards/images/abc.jpg"
-
-    def test_falls_back_to_editions(self):
-        card = Card.model_validate(_base_card(
-            result_editions=[],
-            editions=[{"slug": "ed-1", "image": "/cards/images/xyz.jpg"}],
-        ))
-        assert card.image_filename == "/cards/images/xyz.jpg"
-
-    def test_none_when_no_editions(self):
-        card = Card.model_validate(_base_card(result_editions=[], editions=[]))
-        assert card.image_filename is None
-
-
 # ── SearchResponse ────────────────────────────────────────────────────────────
 
 class TestSearchResponse:

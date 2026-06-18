@@ -41,9 +41,3 @@ class TestCache:
         cache.set("key", "value", ttl=3600)
         assert cache.get("key") == "value"
 
-    def test_clear_removes_all(self, cache):
-        cache.set("a", 1)
-        cache.set("b", 2)
-        cache.clear()
-        assert cache.get("a") is None
-        assert cache.get("b") is None

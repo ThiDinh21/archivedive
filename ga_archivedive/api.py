@@ -55,9 +55,6 @@ class _Cache:
         )
         self._db.commit()
 
-    def clear(self) -> None:
-        self._db.execute("DELETE FROM cache")
-        self._db.commit()
 
 
 def _or_sort_key(card: Card, sort: str) -> tuple:
@@ -165,18 +162,6 @@ class GAClient:
         data = response.json()
         self._cache.set(cache_key, data)
         return Card.model_validate(data)
-
-    async def autocomplete(self, name: str) -> list[Card]:
-        cache_key = f"autocomplete:{name}"
-        if cached := self._cache.get(cache_key):
-            return [Card.model_validate(c) for c in cached]
-
-        response = await self._http.get("/cards/autocomplete", params={"name": name})
-        response.raise_for_status()
-        data = response.json()
-        results = data.get("data", data) if isinstance(data, dict) else data
-        self._cache.set(cache_key, results, ttl=300)
-        return [Card.model_validate(c) for c in results]
 
     async def random(self, count: int = 8) -> list[Card]:
         response = await self._http.get("/cards/random", params={"count": count})
@@ -290,12 +275,3 @@ class GAClient:
         except Exception:
             return set()
 
-    def image_url(self, filename: str) -> str:
-        return f"{BASE_URL}/cards/images/{filename}"
-
-    async def fetch_image(self, filename: str) -> bytes:
-        if filename.startswith("/cards/images/"):
-            filename = filename[len("/cards/images/"):]
-        response = await self._http.get(f"/cards/images/{filename}")
-        response.raise_for_status()
-        return response.content
