@@ -163,6 +163,18 @@ class GAClient:
         self._cache.set(cache_key, data)
         return Card.model_validate(data)
 
+    async def autocomplete_names(self, name: str) -> list[str]:
+        cache_key = f"autocomplete:{name.lower()}"
+        if cached := self._cache.get(cache_key):
+            return cached
+        response = await self._http.get("/cards/autocomplete", params={"name": name})
+        response.raise_for_status()
+        data = response.json()
+        results = data.get("data", data) if isinstance(data, dict) else data
+        names = [c["name"] for c in results if "name" in c]
+        self._cache.set(cache_key, names, ttl=300)
+        return names
+
     async def random(self, count: int = 8) -> list[Card]:
         response = await self._http.get("/cards/random", params={"count": count})
         response.raise_for_status()

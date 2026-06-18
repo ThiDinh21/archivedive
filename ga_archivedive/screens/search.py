@@ -1,7 +1,7 @@
 from __future__ import annotations
 from ..widgets.card_table import CardTable
 from ..widgets.card_panel import CardPanel
-from ..api import BASE_URL
+from ..api import BASE_URL, GAClient
 from ..models import SearchResponse
 
 import httpx
@@ -11,18 +11,42 @@ from textual.binding import Binding
 from textual.containers import Horizontal
 from textual.events import Focus
 from textual.screen import Screen
+from textual.suggester import Suggester
 from textual.timer import Timer
 from textual.widgets import Footer, Header, Input, Label
 
 
+class _CardSuggester(Suggester):
+    def __init__(self, client: GAClient) -> None:
+        super().__init__(use_cache=True, case_sensitive=False)
+        self._client = client
+
+    async def get_suggestion(self, value: str) -> str | None:
+        if ":" in value or len(value) < 2:
+            return None
+        try:
+            names = await self._client.autocomplete_names(value.strip())
+            return names[0] if names else None
+        except Exception:
+            return None
+
+
 class _SearchInput(Input):
-    BINDINGS = [Binding("ctrl+c", "copy_value", "Copy", show=False)]
+    BINDINGS = [
+        Binding("ctrl+c", "copy_value", "Copy", show=False),
+        Binding("tab", "accept_suggestion", "Accept suggestion", show=False),
+    ]
 
     def on_focus(self, event: Focus) -> None:
         self.call_after_refresh(self._deselect)
 
     def _deselect(self) -> None:
         self.cursor_position = len(self.value)
+
+    def action_accept_suggestion(self) -> None:
+        if self._suggestion:
+            self.value = self._suggestion
+            self.cursor_position = len(self.value)
 
     def action_copy_value(self) -> None:
         from .. import copy_to_clipboard
@@ -88,7 +112,11 @@ class SearchScreen(Screen):
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield _SearchInput(placeholder="Search cards… (name, effect, type)", id="search-input")
+        yield _SearchInput(
+            placeholder="Search cards… (name, effect, type)",
+            id="search-input",
+            suggester=_CardSuggester(self.app.client),
+        )
         yield Label("", id="warning")
         with Horizontal(id="main-content"):
             yield CardTable(id="card-table")
