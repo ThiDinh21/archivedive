@@ -129,15 +129,15 @@ class GAClient:
         if name:
             params["name"] = name
         if element:
-            params["element[]"] = element
+            params["element"] = element
         if type:
-            params["type[]"] = type
+            params["type"] = type
         if subtype:
-            params["subtype[]"] = subtype
+            params["subtype"] = subtype
         if cls:
-            params["class[]"] = cls
+            params["class"] = cls
         if rarity:
-            params["rarity[]"] = rarity
+            params["rarity"] = rarity
         if cost_memory is not None:
             params["cost_memory"] = cost_memory
         if cost_reserve is not None:
