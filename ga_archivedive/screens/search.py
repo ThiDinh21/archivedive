@@ -135,7 +135,7 @@ class SearchScreen(Screen):
     def on_mount(self) -> None:
         self._load_initial()
 
-    @work(exclusive=True)
+    @work(exclusive=True, group="search")
     async def _load_initial(self) -> None:
         table = self.query_one(CardTable)
         table.loading = True
@@ -192,9 +192,10 @@ class SearchScreen(Screen):
         elif event.key.isdigit() and not isinstance(focused, Input):
             self.query_one(CardPanel).on_key(event)
 
-    @work(exclusive=True)
+    @work(exclusive=True, group="search")
     async def _do_search(self) -> None:
         table = self.query_one(CardTable)
+        table.clear()
         table.loading = True
         try:
             query = self._last_query.strip()
