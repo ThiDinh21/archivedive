@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from textual.message import Message
 from textual.widgets import DataTable
 

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import Any
 from pydantic import BaseModel, Field, field_validator
 
@@ -154,5 +152,3 @@ class SearchResponse(BaseModel):
     paginated_cards_count: int = 0
     page: int = 1
     page_size: int = 50
-    sort: str | None = None
-    order: str | None = None

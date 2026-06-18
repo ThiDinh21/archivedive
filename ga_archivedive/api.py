@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import asyncio
 import json
 import sqlite3
@@ -38,16 +36,14 @@ class _Cache:
         if row is None:
             return None
         value, expires_at = row
-        if time.time() > expires_at:
-            self._db.execute("DELETE FROM cache WHERE key = ?", (key,))
-            self._db.commit()
-            return None
-        try:
-            return json.loads(value)
-        except json.JSONDecodeError:
-            self._db.execute("DELETE FROM cache WHERE key = ?", (key,))
-            self._db.commit()
-            return None
+        if time.time() <= expires_at:
+            try:
+                return json.loads(value)
+            except json.JSONDecodeError:
+                pass
+        self._db.execute("DELETE FROM cache WHERE key = ?", (key,))
+        self._db.commit()
+        return None
 
     def clear(self) -> None:
         self._db.execute("DELETE FROM cache")
@@ -103,49 +99,14 @@ class GAClient:
         await self._http.aclose()
 
     async def search(
-        self,
-        *,
-        name: str | None = None,
-        element: list[str] | None = None,
-        type: list[str] | None = None,
-        subtype: list[str] | None = None,
-        cls: list[str] | None = None,
-        rarity: list[str] | None = None,
-        cost_memory: int | None = None,
-        cost_reserve: int | None = None,
-        effect: str | None = None,
-        legality_format: str | None = None,
-        sort: str = "name",
-        order: str = "ASC",
-        page: int = 1,
-        page_size: int = 50,
+        self, *, name: str | None = None, page: int = 1, page_size: int = 50,
     ) -> SearchResponse:
         params: dict[str, Any] = {
-            "sort": sort,
-            "order": order,
-            "page": page,
-            "page_size": page_size,
+            "sort": "name", "order": "ASC",
+            "page": page, "page_size": page_size,
         }
         if name:
             params["name"] = name
-        if element:
-            params["element"] = element
-        if type:
-            params["type"] = type
-        if subtype:
-            params["subtype"] = subtype
-        if cls:
-            params["class"] = cls
-        if rarity:
-            params["rarity"] = rarity
-        if cost_memory is not None:
-            params["cost_memory"] = cost_memory
-        if cost_reserve is not None:
-            params["cost_reserve"] = cost_reserve
-        if effect:
-            params["effect"] = effect
-        if legality_format:
-            params["legality_format"] = legality_format
 
         cache_key = f"search:{json.dumps(params, sort_keys=True)}"
         if cached := self._cache.get(cache_key):

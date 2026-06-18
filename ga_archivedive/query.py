@@ -1,6 +1,4 @@
 """Search query parser and API translator for ArchiveDive."""
-from __future__ import annotations
-
 import re
 from dataclasses import dataclass, field
 from typing import Any
@@ -474,24 +472,11 @@ def _check(card: Any, f: Filter) -> bool:
         except (ValueError, TypeError):
             return False
 
-    if key == "cost_memory":
-        if c.cost is None or c.cost.type != "memory":
-            return False
-        try:
-            return _compare(int(c.cost.value or 0), op, int(val))
-        except (ValueError, TypeError):
-            return False
-
-    if key == "cost_reserve":
-        if c.cost is None or c.cost.type != "reserve":
-            return False
-        try:
-            return _compare(int(c.cost.value or 0), op, int(val))
-        except (ValueError, TypeError):
-            return False
-
-    if key == "cost":
+    if key in ("cost_memory", "cost_reserve", "cost"):
         if c.cost is None or c.cost.type == "none":
+            return False
+        expected = {"cost_memory": "memory", "cost_reserve": "reserve"}.get(key)
+        if expected and c.cost.type != expected:
             return False
         try:
             return _compare(int(c.cost.value or 0), op, int(val))

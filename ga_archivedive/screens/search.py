@@ -1,4 +1,3 @@
-from __future__ import annotations
 from ..widgets.card_table import CardTable
 from ..widgets.card_panel import CardPanel
 from ..api import BASE_URL, GAClient
