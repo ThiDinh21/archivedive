@@ -73,6 +73,7 @@ class SearchScreen(Screen):
         Binding("o", "open_image", "Open image"),
         Binding("ctrl+o", "select_art", "Select art", key_display="ctrl+o"),
         Binding("r", "related_cards", "Related cards"),
+        Binding("ctrl+delete", "clear_cache", "Clear cache", show=False),
     ]
 
     DEFAULT_CSS = """
@@ -240,6 +241,10 @@ class SearchScreen(Screen):
 
     def action_help(self) -> None:
         self.app.action_help()
+
+    def action_clear_cache(self) -> None:
+        self.app.client._cache.clear()
+        self.app.notify("Cache cleared", timeout=2)
 
     def action_focus_search(self) -> None:
         self.query_one(Input).focus()

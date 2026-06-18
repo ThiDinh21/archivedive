@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import sqlite3
 import time
@@ -47,6 +48,10 @@ class _Cache:
             self._db.execute("DELETE FROM cache WHERE key = ?", (key,))
             self._db.commit()
             return None
+
+    def clear(self) -> None:
+        self._db.execute("DELETE FROM cache")
+        self._db.commit()
 
     def set(self, key: str, value: Any, ttl: int = CACHE_TTL) -> None:
         self._db.execute(
@@ -206,23 +211,40 @@ class GAClient:
                 sort=parsed.sort, order=parsed.order,
             )
 
-        # OR: fetch all results from each group, merge, then paginate locally
-        seen: set[str] = set()
-        merged: list[Card] = []
-        for group in parsed.groups:
-            api_page = 1
-            while True:
-                result = await self._fetch_group(
-                    group, page=api_page, page_size=50,
+        # OR: fetch all pages from each group in parallel, merge, then paginate locally
+        sem = asyncio.Semaphore(10)
+
+        async def _fetch_throttled(group: list, page: int) -> SearchResponse:
+            async with sem:
+                return await self._fetch_group(
+                    group, page=page, page_size=50,
                     sort=parsed.sort, order=parsed.order,
                 )
-                for card in result.data:
-                    if card.slug not in seen:
-                        seen.add(card.slug)
-                        merged.append(card)
-                if not result.has_more:
-                    break
-                api_page += 1
+
+        async def _fetch_all_pages(group: list) -> list[Card]:
+            first = await _fetch_throttled(group, 1)
+            cards = list(first.data)
+            if not first.has_more:
+                return cards
+            remaining = await asyncio.gather(*(
+                _fetch_throttled(group, p)
+                for p in range(2, first.total_pages + 1)
+            ))
+            for result in remaining:
+                cards.extend(result.data)
+            return cards
+
+        group_results = await asyncio.gather(
+            *(_fetch_all_pages(g) for g in parsed.groups)
+        )
+
+        seen: set[str] = set()
+        merged: list[Card] = []
+        for cards in group_results:
+            for card in cards:
+                if card.slug not in seen:
+                    seen.add(card.slug)
+                    merged.append(card)
 
         merged.sort(
             key=lambda c: _or_sort_key(c, parsed.sort),
