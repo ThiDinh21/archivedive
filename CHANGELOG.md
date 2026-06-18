@@ -7,11 +7,9 @@
 - Cache clear shortcut (`ctrl+delete`)
 - Fix name search missing expected cards (e.g. `t:champion s` not showing Silvie)
 - Fix OR queries only returning first page of results
-- Fix autocomplete ghost text showing garbled suggestions
-- Fix incorrect API parameter names for search and random endpoints
-- Fix loading indicator not showing between searches
-- 15-card page size with pagination instead of scrolling
-- Remove horizontal scrollbar from card table
+- Fix incorrect API parameter names
+- Improved loading and status bar behavior
+- Adjusted table layout and page size
 
 ## [0.1.2] — 2026-06-18
 
