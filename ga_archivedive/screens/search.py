@@ -137,7 +137,7 @@ class SearchScreen(Screen):
         table.loading = True
         try:
             client = self.app.client  # type: ignore[attr-defined]
-            cards = await client.random(count=50)
+            cards = await client.random(count=15)
             table.populate(cards)
             self._set_status(len(cards), 1, 1)
         except httpx.HTTPStatusError as e:
@@ -199,7 +199,7 @@ class SearchScreen(Screen):
 
             if not query:
                 warning_label.display = False
-                cards = await client.random(count=50)
+                cards = await client.random(count=15)
                 table.populate(cards)
                 self._set_status(len(cards), 1, 1)
                 return

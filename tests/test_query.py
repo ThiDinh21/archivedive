@@ -326,8 +326,11 @@ class TestIsClientSide:
             assert Filter(key, "x").is_client_side, f"{key} should be client-side"
 
     def test_server_side_keys(self):
-        for key in ("name", "effect", "element", "prefix", "rule", "flavor", "illustrator"):
+        for key in ("effect", "element", "prefix", "rule", "flavor", "illustrator"):
             assert not Filter(key, "x").is_client_side, f"{key} should be server-side"
+
+    def test_name_is_client_side(self):
+        assert Filter("name", "x").is_client_side
 
     def test_negated_forces_client_side(self):
         assert Filter("element", "fire", negated=True).is_client_side

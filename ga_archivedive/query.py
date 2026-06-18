@@ -93,7 +93,7 @@ def set_known_types(types: set[str]) -> None:
         _KNOWN_TYPES = _KNOWN_TYPES | types  # union: never drop known types
 
 # Fields handled client-side (API params broken or unsupported)
-_CLIENT_SIDE = {"oracle", "keyword", "power", "life", "durability", "level",
+_CLIENT_SIDE = {"name", "oracle", "keyword", "power", "life", "durability", "level",
                 "cost_memory", "cost_reserve", "cost", "subtype", "class", "type"}
 
 # Keys that accept numeric comparison operators
@@ -323,6 +323,11 @@ def to_api_params(filters: list[Filter]) -> dict[str, Any]:
                 params["effect"] = v
             continue
 
+        # name: send to API as hint, also applied client-side as substring
+        if f.key == "name" and not f.negated:
+            params["name"] = v
+            continue
+
         # type/subtype/class: send first occurrence as API narrowing hint;
         # all occurrences are also applied client-side (AND correctness)
         if f.key in ("type", "subtype", "class") and not f.negated and f.op == "=":
@@ -338,9 +343,6 @@ def to_api_params(filters: list[Filter]) -> dict[str, Any]:
 
         if f.is_client_side:
             continue
-
-        if f.key == "name":
-            params["name"] = v
 
         elif f.key == "effect":
             params["effect"] = v
